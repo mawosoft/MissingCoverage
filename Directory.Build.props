@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TargetFrameworks>net5.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Matthias Wolf</Authors>
+    <Company>Mawosoft</Company>
+    <Product>Mawosoft.MissingCoverage</Product>
+    <Copyright>Copyright © 2021 Matthias Wolf, Mawosoft</Copyright>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+  </PropertyGroup>
+
+</Project>
