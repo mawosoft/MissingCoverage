@@ -49,8 +49,8 @@ namespace Mawosoft.MissingCoverage
     {
         public int LineNumber;
         public int Hits;
-        public int CoveredConditions;
-        public int TotalConditions;
+        public int CoveredBranches;
+        public int TotalBranches;
 
         public void Merge(LineInfo other)
         {
@@ -58,18 +58,19 @@ namespace Mawosoft.MissingCoverage
             if (LineNumber != other.LineNumber)
                 return;
             Hits = Math.Max(Hits, other.Hits);
-            if (TotalConditions == other.TotalConditions)
+            if (TotalBranches == other.TotalBranches)
             {
-                CoveredConditions = Math.Max(CoveredConditions, other.CoveredConditions);
+                CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
             }
             else
             {
-                double covered = TotalConditions == 0 ? 0 : (double)CoveredConditions / TotalConditions;
-                double otherCovered = other.TotalConditions == 0 ? 0 : (double)other.CoveredConditions / other.TotalConditions;
+                // This should rather not happen as it indicates that we merge reports from different source file versions.
+                double covered = TotalBranches == 0 ? 0 : (double)CoveredBranches / TotalBranches;
+                double otherCovered = other.TotalBranches == 0 ? 0 : (double)other.CoveredBranches / other.TotalBranches;
                 if (otherCovered > covered)
                 {
-                    CoveredConditions = other.CoveredConditions;
-                    TotalConditions = other.TotalConditions;
+                    CoveredBranches = other.CoveredBranches;
+                    TotalBranches = other.TotalBranches;
                 }
             }
         }
@@ -78,20 +79,23 @@ namespace Mawosoft.MissingCoverage
     internal class CoverageResult
     {
         public int HitThreshold { get; }
-        public int ConditionThreshold { get; }
+        public int CoverageThreshold { get; }
+        public int BranchThreshold { get; }
         public List<string> InputFilePaths { get; } = new();
         public Dictionary<string, SourceFileInfo> SourceFiles { get; } = new();
 
-        public CoverageResult(int hitThreshold, int conditionThreshold)
+        public CoverageResult(int hitThreshold, int coverageThreshold, int branchThreshold)
         {
             HitThreshold = hitThreshold;
-            ConditionThreshold = conditionThreshold;
+            CoverageThreshold = coverageThreshold;
+            BranchThreshold = branchThreshold;
         }
 
-        public CoverageResult(int hitThreshold, int conditionThreshold, string inputFilePath)
+        public CoverageResult(int hitThreshold, int coverageThreshold, int branchThreshold, string inputFilePath)
         {
             HitThreshold = hitThreshold;
-            ConditionThreshold = conditionThreshold;
+            CoverageThreshold = coverageThreshold;
+            BranchThreshold = branchThreshold;
             if (!string.IsNullOrEmpty(inputFilePath))
             {
                 InputFilePaths.Add(inputFilePath);
@@ -112,6 +116,8 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
+        // TODO Could merging lead to lines no longer matching the parameter set?
+        // If so we have to verify the final merged CoverageResult and remove lines or even source files.
         public void Merge(CoverageResult other)
         {
             InputFilePaths.AddRange(other.InputFilePaths);

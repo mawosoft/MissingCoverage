@@ -19,36 +19,45 @@ namespace Mawosoft.MissingCoverage
         private static readonly XPathExpression s_xpathSources = XPathExpression.Compile("/coverage/sources/source");
         private static readonly XPathExpression s_xpathClasses = XPathExpression.Compile("/coverage/packages/package/classes/class");
         private static readonly XPathExpression s_xpathAltClasses = XPathExpression.Compile("/coverage/packages/class");
-        private static readonly ConcurrentDictionary<(int hitThreshold, int conditionThreshold), XPathExpression> s_xpathLinesCached = new();
+        private static readonly ConcurrentDictionary<(int hitThreshold, int coverageThreshold, int branchThreshold), XPathExpression> s_xpathLinesCached = new();
         private static readonly Regex s_regexConditionCoverage = new(@"\((\d+)/(\d+)\)", RegexOptions.CultureInvariant);
 
         private readonly XPathExpression _xpathClasses;
 
         public XPathDocument Document { get; }
 
-        public CoberturaParser(string filePath) : this(new XPathDocument(filePath)) { }
-        public CoberturaParser(XPathDocument document)
+        public CoberturaParser(string filePath)
         {
-            Document = document;
+            Document = new XPathDocument(filePath);
+            _xpathClasses = VerifyDocumentAndGetXPathClasses();
+        }
+
+        public CoberturaParser(Stream stream)
+        {
+            Document = new XPathDocument(stream);
+            _xpathClasses = VerifyDocumentAndGetXPathClasses();
+        }
+
+        private XPathExpression VerifyDocumentAndGetXPathClasses()
+        {
             XPathNavigator navi = Document.CreateNavigator();
             if (navi.SelectSingleNode(s_xpathVerify) != null)
             {
-                _xpathClasses = s_xpathClasses;
-                return;
+                return s_xpathClasses;
             }
             else if (navi.SelectSingleNode(s_xpathAltVerify) != null)
             {
-                _xpathClasses = s_xpathAltClasses;
-                return;
+                return s_xpathAltClasses;
             }
             ThrowXmlException(null, "This is not a valid Cobertura report.");
+            throw null; // Compiler doesn't seem to recognize [DoesNotReturn] attribute?
         }
 
-        public CoverageResult Parse(int hitThreshold, int conditionThreshold, Func<string, IReadOnlyList<string>, string>? filePathResolver)
+        public CoverageResult Parse(int hitThreshold, int coverageThreshold, int branchThreshold, Func<string, IReadOnlyList<string>, string>? filePathResolver)
         {
-            if (!s_xpathLinesCached.TryGetValue((hitThreshold, conditionThreshold), out XPathExpression? xpathLines))
+            if (!s_xpathLinesCached.TryGetValue((hitThreshold, coverageThreshold, branchThreshold), out XPathExpression? xpathLines))
             {
-                xpathLines = CreateXpathLines(hitThreshold, conditionThreshold);
+                xpathLines = CreateCachedXpathLines(hitThreshold, coverageThreshold, branchThreshold);
             }
             if (filePathResolver == null)
             {
@@ -56,7 +65,6 @@ namespace Mawosoft.MissingCoverage
             }
             XPathNavigator navi = Document.CreateNavigator();
             List<string> sourceDirectories = new();
-            Dictionary<string, SourceFileInfo> sourceFiles = new();
             XPathNodeIterator sources = navi.Select(s_xpathSources);
             foreach (XPathNavigator source in sources)
             {
@@ -65,6 +73,9 @@ namespace Mawosoft.MissingCoverage
                     sourceDirectories.Add(source.Value);
                 }
             }
+            // We temporarly use a dictionary of relative source file names to avoid resolving file names we don't need,
+            // or the same file name multiple times.
+            Dictionary<string, SourceFileInfo> sourceFiles = new();
             XPathNodeIterator classes = navi.Select(_xpathClasses);
             foreach (XPathNavigator @class in classes)
             {
@@ -91,8 +102,8 @@ namespace Mawosoft.MissingCoverage
                         {
                             ThrowXmlException(line, "Invalid attribute value 'condition-coverage'.");
                         }
-                        lineInfo.CoveredConditions = int.Parse(m.Groups[1].Value);
-                        lineInfo.TotalConditions = int.Parse(m.Groups[2].Value);
+                        lineInfo.CoveredBranches = int.Parse(m.Groups[1].Value);
+                        lineInfo.TotalBranches = int.Parse(m.Groups[2].Value);
                     }
                     if (!int.TryParse(line.GetAttribute("number", ""), out lineInfo.LineNumber))
                     {
@@ -121,7 +132,8 @@ namespace Mawosoft.MissingCoverage
             catch (Exception)
             {
             }
-            CoverageResult result = new(hitThreshold, conditionThreshold, inputFilePath);
+            CoverageResult result = new(hitThreshold, coverageThreshold, branchThreshold, inputFilePath);
+            // Resolve relative file names against source dirs and add to result.
             foreach (SourceFileInfo fileInfo in sourceFiles.Values)
             {
                 string resolved = filePathResolver(fileInfo.FilePath, sourceDirectories);
@@ -131,6 +143,7 @@ namespace Mawosoft.MissingCoverage
             return result;
         }
 
+        // Internal file path resolver if caller hasn't provided one
         private static string ResolveFilePath(string fileName, IReadOnlyList<string> sourceDirectories)
         {
             if (sourceDirectories.Count == 0)
@@ -151,24 +164,26 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        private static XPathExpression CreateXpathLines(int hitThreshold, int conditionThreshold)
+        private static XPathExpression CreateCachedXpathLines(int hitThreshold, int coverageThreshold, int branchThreshold)
         {
-            string s = (hitThreshold, conditionThreshold) switch
+            // XPath expressions optimized for certain parameter sets.
+            string s = (hitThreshold, coverageThreshold, branchThreshold) switch
             {
-                (1, 100) => "lines/line[@hits = '0' or (@condition-coverage and not(starts-with(@condition-coverage, '100%')))]",
-                (0, 100) => "lines/line[@condition-coverage and not(starts-with(@condition-coverage, '100%'))]",
-                (0, > 100) => "lines/line[@condition-coverage]",
-                (1, 0) => "lines/line[@hits = '0']",
-                (_, 0) => $"lines/line[number(@hits) < {hitThreshold}]",
-                _ => $"lines/line[number(@hits) < {hitThreshold} or number(substring-before(@condition-coverage, '%')) < {conditionThreshold}]",
+                (1, 100, <4) => "lines/line[@hits = '0' or (@condition-coverage and not(starts-with(@condition-coverage, '100%')))]",
+                (0, 100, < 4) => "lines/line[@condition-coverage and not(starts-with(@condition-coverage, '100%'))]",
+                (0, > 100, < 4) => "lines/line[@condition-coverage]",
+                (1, 0, < 4) => "lines/line[@hits = '0']",
+                (_, 0, < 4) => $"lines/line[number(@hits) < {hitThreshold}]",
+                (_, _, < 4) => $"lines/line[number(@hits) < {hitThreshold} or number(substring-before(@condition-coverage, '%')) < {coverageThreshold}]",
+                _ => $"lines/line[number(@hits) < {hitThreshold} or (number(substring-before(@condition-coverage, '%')) < {coverageThreshold} and number(substring-before(substring-after(@condition-coverage, '/'), ')')) >= {branchThreshold})]",
             };
             XPathExpression xpath = XPathExpression.Compile(s);
             // We don't care if someone else has already added it, we can still return our result.
-            _ = s_xpathLinesCached.TryAdd((hitThreshold, conditionThreshold), xpath);
+            _ = s_xpathLinesCached.TryAdd((hitThreshold, coverageThreshold, branchThreshold), xpath);
             return xpath;
         }
 
-        [DoesNotReturn()]
+        [DoesNotReturn]
         private static void ThrowXmlException(XPathNavigator? node = null, string? message = null, Exception? innerException = null)
         {
             int lineNumber = 0, linePosition = 0;

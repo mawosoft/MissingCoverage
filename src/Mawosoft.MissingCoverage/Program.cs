@@ -14,7 +14,8 @@ namespace Mawosoft.MissingCoverage
         public TextWriter Out { get; set; } = Console.Out;
         public TextWriter Error { get; set; } = Console.Error;
         public int HitThreshold { get; set; } = 1;
-        public int ConditionThreshold { get; set; } = 100;
+        public int CoverageThreshold { get; set; } = 100;
+        public int BranchThreshold { get; set; } = 2;
         public bool LatestOnly { get; set; }
         public bool ShowHelpOnly { get; set; }
         public List<string> InputFilePaths { get; } = new();
@@ -30,7 +31,7 @@ namespace Mawosoft.MissingCoverage
 
         internal void Run(string[] args)
         {
-            WriteProgramTitle();
+            WriteAppTitle();
             try
             {
                 ParseArguments(args);
@@ -87,8 +88,12 @@ namespace Mawosoft.MissingCoverage
                             HitThreshold = result;
                             i++;
                             break;
-                        case "-ct" or "--condition-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
-                            ConditionThreshold = result;
+                        case "-ct" or "--coverage-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
+                            CoverageThreshold = result;
+                            i++;
+                            break;
+                        case "-bt" or "--branch-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
+                            BranchThreshold = result;
                             i++;
                             break;
                         default:
@@ -133,6 +138,7 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
+        // TODO Rethink --latest-only and FilterInputFiles.
         internal void FilterInputFiles()
         {
             if (!LatestOnly || InputFilePaths.Count <= 1)
@@ -168,12 +174,12 @@ namespace Mawosoft.MissingCoverage
 
         internal void ProcessInputFiles()
         {
-            MergedResult = new(HitThreshold, ConditionThreshold);
+            MergedResult = new(HitThreshold, CoverageThreshold, BranchThreshold);
             foreach (string inputFile in InputFilePaths)
             {
                 Out.WriteLine($"Input file: {inputFile}");
                 CoberturaParser parser = new(inputFile);
-                CoverageResult result = parser.Parse(MergedResult.HitThreshold, MergedResult.ConditionThreshold, null);
+                CoverageResult result = parser.Parse(MergedResult.HitThreshold, MergedResult.CoverageThreshold, MergedResult.BranchThreshold, null);
                 MergedResult.Merge(result);
             }
         }
@@ -191,53 +197,59 @@ namespace Mawosoft.MissingCoverage
                 lines.Sort((x, y) => x.LineNumber - y.LineNumber);
                 foreach (LineInfo line in lines)
                 {
-                    string msgcode = line.TotalConditions > 0 ? "MC0001" : "MC0002";
+                    string msgcode = line.TotalBranches > 0 ? "MC0001" : "MC0002";
                     string condition = string.Empty;
-                    if (line.TotalConditions > 0)
+                    if (line.TotalBranches > 0)
                     {
-                        condition = $" Condition coverage: {Math.Round((double)line.CoveredConditions / line.TotalConditions * 100)}% ({line.CoveredConditions}/{line.TotalConditions})";
+                        condition = $" Condition coverage: {Math.Round((double)line.CoveredBranches / line.TotalBranches * 100)}% ({line.CoveredBranches}/{line.TotalBranches})";
                     }
                     Out.WriteLine($"{fileName}({line.LineNumber}): warning {msgcode}: Hits: {line.Hits}{condition}");
                 }
             }
         }
 
-        internal void WriteProgramTitle()
+        internal static (string name, string version, string copyright) GetAppInfo()
         {
             Assembly asm = Assembly.GetExecutingAssembly();
             AssemblyName asmName = asm.GetName();
+            string name = asmName.Name ?? nameof(MissingCoverage);
+            string version = asmName.Version?.ToString() ?? string.Empty;
             object[] copyrights = asm.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-            AssemblyCopyrightAttribute? copyright = copyrights.Length == 1 ? copyrights[0] as AssemblyCopyrightAttribute : null;
-            Out.WriteLine($"{asmName.Name} {asmName.Version} {copyright?.Copyright}");
+            string copyright = ((copyrights.Length == 1 ? copyrights[0] : null) as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
+            return (name, version, copyright);
+        }
+
+        internal void WriteAppTitle()
+        {
+            (string name, string version, string copyright) = GetAppInfo();
+            Out.WriteLine($"{name} {version} {copyright}");
         }
 
         internal void WriteHelpText()
         {
-            Out.WriteLine(@"
-Usage: MissingCoverage [options] [filespecs]
-
-Default:
-  MissingCoverage --hit-threshold 1 --condition-threshold 100 **\*cobertura*.xml
+            (string name, _, _) = GetAppInfo();
+            Out.WriteLine(@$"
+Usage: {name} [options] [filespecs]
 
 Options:
   -h|--help                            Display this help.
-  -ht|--hit-threshold <INTEGER>        Lowest # of line hits to mark line as covered (i.e. don't report it).
-  -ct|--condition-threshold <INTEGER>  Lowest percentage to mark a condition (branch) as covered.
-  -lo|--latest-only                    Of multiple files with the same name in different directories,
-                                       only the one modified latest will be used.
+  -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
+  -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
+  -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
+  -lo|--latest-only                    Of multiple files with the same name in different directories, only the one modified latest will be used.
   --                                   Indicates that everything afterwards are filespecs, even if starting with -/--.
 
 Filespecs:
   Any number of space separated file specs. Wildcards * ? ** are supported.
   Absolute or relative paths can be used. Relative paths are based on the current directory.
 
+Default:
+  {name} --hit-threshold 1 --coverage-threshold 100 --branch-threshold 2 **\*cobertura*.xml
+
 Examples:
-  C:\MyProjects\**\*cobertura*.xml   Process all xml files with name containing 'cobertura' recursively in all
-                                     subdirectories of 'C:\MyProjects'.
-  --latest-only TestResults\*\coverage.cobertura.xml    Process only the newest report in the randomly named
-                                     subdirectories of 'TestResults' in the current directory.
-  -hit-threshold 0                   Report only lines with incomplete condition coverage, ignore lines that
-                                     are not branches.
+  C:\MyProjects\**\*cobertura*.xml                     Process all xml files with name containing 'cobertura' recursively in all subdirectories of 'C:\MyProjects'.
+  --latest-only TestResults\*\coverage.cobertura.xml   Process only the newest report in the randomly named subdirectories of 'TestResults' in the current directory.
+  -hit-threshold 0                                     Report only lines with incomplete branch coverage, ignore lines that don't contain branches.
 ");
         }
     }
