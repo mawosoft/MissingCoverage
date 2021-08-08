@@ -64,9 +64,14 @@ namespace Mawosoft.MissingCoverage
             }
             else
             {
-                // This should rather not happen as it indicates that we merge reports from different source file versions.
-                double covered = TotalBranches == 0 ? 0 : (double)CoveredBranches / TotalBranches;
-                double otherCovered = other.TotalBranches == 0 ? 0 : (double)other.CoveredBranches / other.TotalBranches;
+                // This should rather not happen as it indicates that we merge reports from different
+                // source file versions.
+                double covered = TotalBranches == 0
+                               ? 0
+                               : (double)CoveredBranches / TotalBranches;
+                double otherCovered = other.TotalBranches == 0
+                                    ? 0
+                                    : (double)other.CoveredBranches / other.TotalBranches;
                 if (otherCovered > covered)
                 {
                     CoveredBranches = other.CoveredBranches;
@@ -116,8 +121,7 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        // TODO Could merging lead to lines no longer matching the parameter set?
-        // If so we have to verify the final merged CoverageResult and remove lines or even source files.
+        // TODO Current merging only works rudimentarily. See Issue #1.
         public void Merge(CoverageResult other)
         {
             InputFilePaths.AddRange(other.InputFilePaths);

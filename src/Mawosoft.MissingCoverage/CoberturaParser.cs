@@ -9,7 +9,6 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.XPath;
 
-
 namespace Mawosoft.MissingCoverage
 {
     internal class CoberturaParser
@@ -53,9 +52,11 @@ namespace Mawosoft.MissingCoverage
             throw null; // Compiler doesn't seem to recognize [DoesNotReturn] attribute?
         }
 
-        public CoverageResult Parse(int hitThreshold, int coverageThreshold, int branchThreshold, Func<string, IReadOnlyList<string>, string>? filePathResolver)
+        public CoverageResult Parse(int hitThreshold, int coverageThreshold, int branchThreshold,
+                                    Func<string, IReadOnlyList<string>, string>? filePathResolver)
         {
-            if (!s_xpathLinesCached.TryGetValue((hitThreshold, coverageThreshold, branchThreshold), out XPathExpression? xpathLines))
+            if (!s_xpathLinesCached.TryGetValue((hitThreshold, coverageThreshold, branchThreshold),
+                                                out XPathExpression? xpathLines))
             {
                 xpathLines = CreateCachedXpathLines(hitThreshold, coverageThreshold, branchThreshold);
             }
@@ -73,8 +74,8 @@ namespace Mawosoft.MissingCoverage
                     sourceDirectories.Add(source.Value);
                 }
             }
-            // We temporarly use a dictionary of relative source file names to avoid resolving file names we don't need,
-            // or the same file name multiple times.
+            // We temporarly use a dictionary of relative source file names to avoid resolving file names we
+            // don't need, or the same file name multiple times.
             Dictionary<string, SourceFileInfo> sourceFiles = new();
             XPathNodeIterator classes = navi.Select(_xpathClasses);
             foreach (XPathNavigator @class in classes)
@@ -164,12 +165,13 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        private static XPathExpression CreateCachedXpathLines(int hitThreshold, int coverageThreshold, int branchThreshold)
+        private static XPathExpression CreateCachedXpathLines(int hitThreshold, int coverageThreshold,
+                                                              int branchThreshold)
         {
             // XPath expressions optimized for certain parameter sets.
             string s = (hitThreshold, coverageThreshold, branchThreshold) switch
             {
-                (1, 100, <4) => "lines/line[@hits = '0' or (@condition-coverage and not(starts-with(@condition-coverage, '100%')))]",
+                (1, 100, < 4) => "lines/line[@hits = '0' or (@condition-coverage and not(starts-with(@condition-coverage, '100%')))]",
                 (0, 100, < 4) => "lines/line[@condition-coverage and not(starts-with(@condition-coverage, '100%'))]",
                 (0, > 100, < 4) => "lines/line[@condition-coverage]",
                 (1, 0, < 4) => "lines/line[@hits = '0']",
@@ -184,7 +186,8 @@ namespace Mawosoft.MissingCoverage
         }
 
         [DoesNotReturn]
-        private static void ThrowXmlException(XPathNavigator? node = null, string? message = null, Exception? innerException = null)
+        private static void ThrowXmlException(XPathNavigator? node = null, string? message = null,
+                                              Exception? innerException = null)
         {
             int lineNumber = 0, linePosition = 0;
             if (node is IXmlLineInfo lineInfo && lineInfo.HasLineInfo())

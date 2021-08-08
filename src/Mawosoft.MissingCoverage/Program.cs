@@ -11,8 +11,8 @@ namespace Mawosoft.MissingCoverage
 {
     internal class Program
     {
-        public TextWriter Out { get; set; } = Console.Out;
-        public TextWriter Error { get; set; } = Console.Error;
+        public static TextWriter Out { get; set; } = Console.Out;
+        public static TextWriter Error { get; set; } = Console.Error;
         public int HitThreshold { get; set; } = 1;
         public int CoverageThreshold { get; set; } = 100;
         public int BranchThreshold { get; set; } = 2;
@@ -20,8 +20,6 @@ namespace Mawosoft.MissingCoverage
         public bool ShowHelpOnly { get; set; }
         public List<string> InputFilePaths { get; } = new();
         public CoverageResult? MergedResult { get; private set; }
-
-        internal Program() { }
 
         internal static void Main(string[] args)
         {
@@ -49,7 +47,6 @@ namespace Mawosoft.MissingCoverage
             }
             try
             {
-                FilterInputFiles();
                 ProcessInputFiles();
                 WriteResults();
             }
@@ -82,6 +79,7 @@ namespace Mawosoft.MissingCoverage
                             return; // Ignore remaining args
                         case "-lo":
                         case "--latest-only":
+                            ExecuteMatcher(); // Flush any collected patterns before setting flag
                             LatestOnly = true;
                             break;
                         case "-ht" or "--hit-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
@@ -108,11 +106,14 @@ namespace Mawosoft.MissingCoverage
                     if (root != lastRoot)
                     {
                         ExecuteMatcher();
-                        matcher = null;
                         lastRoot = root;
                     }
                     matcher ??= new();
                     matcher.AddInclude(root.Length == 0 ? arg : Path.GetRelativePath(root, arg));
+                    if (LatestOnly)
+                    {
+                        ExecuteMatcher();
+                    }
                 }
             }
             if (!hasFileSpec)
@@ -128,46 +129,37 @@ namespace Mawosoft.MissingCoverage
 
             void ExecuteMatcher()
             {
-                if (matcher == null) return;
-                DirectoryInfo dirInfo = new(lastRoot.Length == 0 ? "." : lastRoot);
-                PatternMatchingResult result = matcher.Execute(new DirectoryInfoWrapper(dirInfo));
-                foreach (FilePatternMatch file in result.Files)
+                if (matcher != null)
                 {
-                    InputFilePaths.Add(Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path)));
-                }
-            }
-        }
-
-        // TODO Rethink --latest-only and FilterInputFiles.
-        internal void FilterInputFiles()
-        {
-            if (!LatestOnly || InputFilePaths.Count <= 1)
-            {
-                return;
-            }
-            Dictionary<string, (DateTime lastModified, string inputFilePath)> fileNames = new(InputFilePaths.Count);
-            foreach (string inputFilePath in InputFilePaths)
-            {
-                DateTime lastModified = File.GetLastWriteTime(inputFilePath);
-                string fileName = Path.GetFileName(inputFilePath);
-                if (fileNames.TryGetValue(fileName, out (DateTime lastModified, string inputFilePath) existing))
-                {
-                    if (lastModified > existing.lastModified)
+                    DirectoryInfo dirInfo = new(lastRoot.Length == 0 ? "." : lastRoot);
+                    PatternMatchingResult result = matcher.Execute(new DirectoryInfoWrapper(dirInfo));
+                    if (LatestOnly)
                     {
-                        fileNames[fileName] = (lastModified, inputFilePath);
+                        DateTime latestModified = DateTime.FromFileTime(0); // Reported for non-existing files.
+                        string? latestInputFilePath = null;
+                        foreach (FilePatternMatch file in result.Files)
+                        {
+                            string inputFilePath = Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path));
+                            DateTime lastModified = File.GetLastWriteTime(inputFilePath);
+                            if (lastModified > latestModified)
+                            {
+                                latestModified = lastModified;
+                                latestInputFilePath = inputFilePath;
+                            }
+                        }
+                        if (latestInputFilePath != null)
+                        {
+                            InputFilePaths.Add(latestInputFilePath);
+                        }
                     }
-                }
-                else
-                {
-                    fileNames.Add(fileName, (lastModified, inputFilePath));
-                }
-            }
-            if (fileNames.Count != InputFilePaths.Count)
-            {
-                InputFilePaths.Clear();
-                foreach ((_, string inputFilePath) in fileNames.Values)
-                {
-                    InputFilePaths.Add(inputFilePath);
+                    else
+                    {
+                        foreach (FilePatternMatch file in result.Files)
+                        {
+                            InputFilePaths.Add(Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path)));
+                        }
+                    }
+                    matcher = null;
                 }
             }
         }
@@ -179,11 +171,14 @@ namespace Mawosoft.MissingCoverage
             {
                 Out.WriteLine($"Input file: {inputFile}");
                 CoberturaParser parser = new(inputFile);
-                CoverageResult result = parser.Parse(MergedResult.HitThreshold, MergedResult.CoverageThreshold, MergedResult.BranchThreshold, null);
+                CoverageResult result = parser.Parse(MergedResult.HitThreshold, MergedResult.CoverageThreshold,
+                                                     MergedResult.BranchThreshold, null);
                 MergedResult.Merge(result);
             }
         }
 
+        // For navigable message format see:
+        // https://docs.microsoft.com/en-us/cpp/build/formatting-the-output-of-a-custom-build-step-or-build-event?view=msvc-160
         internal void WriteResults()
         {
             if (MergedResult == null)
@@ -215,17 +210,18 @@ namespace Mawosoft.MissingCoverage
             string name = asmName.Name ?? nameof(MissingCoverage);
             string version = asmName.Version?.ToString() ?? string.Empty;
             object[] copyrights = asm.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-            string copyright = ((copyrights.Length == 1 ? copyrights[0] : null) as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
+            string copyright = ((copyrights.Length == 1 ? copyrights[0] : null)
+                                as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
             return (name, version, copyright);
         }
 
-        internal void WriteAppTitle()
+        internal static void WriteAppTitle()
         {
             (string name, string version, string copyright) = GetAppInfo();
             Out.WriteLine($"{name} {version} {copyright}");
         }
 
-        internal void WriteHelpText()
+        internal static void WriteHelpText()
         {
             (string name, _, _) = GetAppInfo();
             Out.WriteLine(@$"
@@ -236,8 +232,8 @@ Options:
   -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
   -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
   -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
-  -lo|--latest-only                    Of multiple files with the same name in different directories, only the one modified latest will be used.
-  --                                   Indicates that everything afterwards are filespecs, even if starting with -/--.
+  -lo|--latest-only                    For each subsequent filespec, uses only the newest of all matching files.
+  --                                   Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
 
 Filespecs:
   Any number of space separated file specs. Wildcards * ? ** are supported.
