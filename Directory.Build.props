@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <TargetFrameworks>net5.0</TargetFrameworks>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -11,8 +11,7 @@
     <Company>Mawosoft</Company>
     <Product>Mawosoft.MissingCoverage</Product>
     <Copyright>Copyright (c) 2021 Matthias Wolf, Mawosoft</Copyright>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
-    <FileVersion>0.9.0.0</FileVersion>
+    <Version>0.9.1-dev</Version>
   </PropertyGroup>
 
 </Project>
