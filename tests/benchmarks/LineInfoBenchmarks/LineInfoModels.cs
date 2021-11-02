@@ -54,18 +54,29 @@ namespace LineInfoBenchmarks
             Hits = other.Hits;
             CoveredBranches = other.CoveredBranches;
             TotalBranches = other.TotalBranches;
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
         }
         public void Merge(in LineInfo2Struct other)
         {
             Hits = Math.Max(Hits, other.Hits);
             CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
             TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
         }
     }
 
     public class LineInfo2Class
     {
         public int Hits, CoveredBranches, TotalBranches;
+        public LineInfo2Class() { }
         public LineInfo2Class(LineInfo1Class other)
         {
             Hits = other.Hits;

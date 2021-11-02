@@ -1,22 +1,6 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Json;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Parameters;
-using BenchmarkDotNet.Reports;
-using BenchmarkDotNet.Running;
-using Mawosoft.Extensions.BenchmarkDotNet;
-using Perfolizer.Horology;
 
 namespace LineInfoBenchmarks
 {
@@ -90,28 +74,6 @@ namespace LineInfoBenchmarks
     {
         public SortedList<int, LineInfo2Class> Lines;
         public FileInfo_SortedList_LineInfo2Class(int capactity) => Lines = new(capactity);
-    }
-
-    public class FileInfo_LineArrayInt_Bitflags_DictBranchStruct
-    {
-        public int[] Lines;
-        public Dictionary<int, BranchInfo1Struct> Branches;
-        public FileInfo_LineArrayInt_Bitflags_DictBranchStruct(int linesCapactity, int branchesCapacity)
-        {
-            Lines = new int[linesCapactity];
-            Branches = new(branchesCapacity);
-        }
-    }
-
-    public class FileInfo_LineArrayInt_Bitflags_DictBranchClass
-    {
-        public int[] Lines;
-        public Dictionary<int, BranchInfo1Class> Branches;
-        public FileInfo_LineArrayInt_Bitflags_DictBranchClass(int linesCapactity, int branchesCapacity)
-        {
-            Lines = new int[linesCapactity];
-            Branches = new(branchesCapacity);
-        }
     }
 
     public class FileInfo_Array_LineInfo1Struct

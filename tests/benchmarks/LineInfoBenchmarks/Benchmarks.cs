@@ -2,20 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Exporters;
-using BenchmarkDotNet.Exporters.Json;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Parameters;
-using BenchmarkDotNet.Reports;
-using BenchmarkDotNet.Running;
-using Mawosoft.Extensions.BenchmarkDotNet;
-using Perfolizer.Horology;
 
 namespace LineInfoBenchmarks
 {
