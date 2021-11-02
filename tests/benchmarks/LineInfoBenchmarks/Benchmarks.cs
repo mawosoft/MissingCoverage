@@ -2,20 +2,22 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LineInfoBenchmarks
 {
     public partial class Benchmarks
     {
-        public static IEnumerable<(string operation, int count, int capacity)> OperationCountAndCapacity()
+        public static IEnumerable<(string group, string operation, TestDataStats stats, int capacity, int branchCapacity)> GenericArgumentsSource()
         {
-            // Note: capacity == count means full capacity.
-            // For models using an array indexed by line number, this must be replaced with the highest
-            // line number - which is also the last one, because TestDataSource provides ordered data.
+            // Note: capacity == testDataStats.Count means full capacity. For models using an array indexed
+            // by line number, this must be replaced with the highest line number.
+            // Likeewise, branchCapacity == testDataStats.Branches means fullCapacity (no replacements here).
             int count = Math.Min(1000, TestDataSource.Instance.Count);
-            yield return ("add", count, 4);
-            yield return ("add", count, count);
-            yield return ("update", count, 0);
+            TestDataStats stats = new(TestDataSource.Instance.Take(count));
+            yield return ("1", "add", stats, 4, stats.Branches);
+            yield return ("2", "add", stats, count, stats.Branches);
+            yield return ("3", "update", stats, 0, 0);
         }
     }
 }

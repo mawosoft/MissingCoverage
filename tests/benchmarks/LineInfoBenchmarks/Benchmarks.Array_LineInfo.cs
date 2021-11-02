@@ -10,23 +10,21 @@ namespace LineInfoBenchmarks
     {
         public IEnumerable<object[]> Args_Array_LineInfo1Struct()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_Array_LineInfo1Struct?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_Array_LineInfo1Struct>(CreateFileInfo(count), $"{count}"),
-                    // In line number indexed arrays, full capacity must be based on highest line number, not line count.
-                    // However, for proper grouping of benchmarks, we have to pretend otherwise.
-                    new ParamWrapper<int>(capacity == count ? TestDataSource.Instance[count - 1].LineNumber : capacity, capacity.ToString())
+                    group,
+                    new ParamWrapper<FileInfo_Array_LineInfo1Struct?>(operation == "add" ? null : CreateFileInfo(stats), operation),
+                    new ParamWrapper<FileInfo_Array_LineInfo1Struct>(CreateFileInfo(stats), $"{stats.Count}/{stats.MaxLineNo}"),
+                    capacity == stats.Count ? stats.MaxLineNo : capacity
                 };
             }
 
-            static FileInfo_Array_LineInfo1Struct CreateFileInfo(int count)
+            static FileInfo_Array_LineInfo1Struct CreateFileInfo(TestDataStats stats)
             {
-                int capacity = TestDataSource.Instance[count - 1].LineNumber;
-                FileInfo_Array_LineInfo1Struct fileInfo = new(capacity);
-                for (int i = 0; i < count; i++)
+                FileInfo_Array_LineInfo1Struct fileInfo = new(stats.MaxLineNo);
+                for (int i = 0; i < stats.Count; i++)
                 {
                     fileInfo[TestDataSource.Instance[i].LineNumber - 1] = new(TestDataSource.Instance[i]);
                 }
@@ -37,11 +35,12 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_Array_LineInfo1Struct))]
         public void Array_LineInfo1Struct(
+            string group,
             ParamWrapper<FileInfo_Array_LineInfo1Struct?> target,
             ParamWrapper<FileInfo_Array_LineInfo1Struct> source,
-            ParamWrapper<int> capacity)
+            int capacity)
         {
-            FileInfo_Array_LineInfo1Struct t = target.Value ?? new(capacity.Value);
+            FileInfo_Array_LineInfo1Struct t = target.Value ?? new(capacity);
             LineInfo1Struct[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {
@@ -55,21 +54,21 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_Array_LineInfo1Class()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_Array_LineInfo1Class?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_Array_LineInfo1Class>(CreateFileInfo(count), $"{count}"),
-                    new ParamWrapper<int>(capacity == count ? TestDataSource.Instance[count - 1].LineNumber : capacity, capacity.ToString())
+                    group,
+                    new ParamWrapper<FileInfo_Array_LineInfo1Class?>(operation == "add" ? null : CreateFileInfo(stats), operation),
+                    new ParamWrapper<FileInfo_Array_LineInfo1Class>(CreateFileInfo(stats), $"{stats.Count}/{stats.MaxLineNo}"),
+                    capacity == stats.Count ? stats.MaxLineNo : capacity
                 };
             }
 
-            static FileInfo_Array_LineInfo1Class CreateFileInfo(int count)
+            static FileInfo_Array_LineInfo1Class CreateFileInfo(TestDataStats stats)
             {
-                int capacity = TestDataSource.Instance[count - 1].LineNumber;
-                FileInfo_Array_LineInfo1Class fileInfo = new(capacity);
-                for (int i = 0; i < count; i++)
+                FileInfo_Array_LineInfo1Class fileInfo = new(stats.MaxLineNo);
+                for (int i = 0; i < stats.Count; i++)
                 {
                     fileInfo[TestDataSource.Instance[i].LineNumber - 1] = new(TestDataSource.Instance[i]);
                 }
@@ -80,11 +79,12 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_Array_LineInfo1Class))]
         public void Array_LineInfo1Class(
+            string group,
             ParamWrapper<FileInfo_Array_LineInfo1Class?> target,
             ParamWrapper<FileInfo_Array_LineInfo1Class> source,
-            ParamWrapper<int> capacity)
+            int capacity)
         {
-            FileInfo_Array_LineInfo1Class t = target.Value ?? new(capacity.Value);
+            FileInfo_Array_LineInfo1Class t = target.Value ?? new(capacity);
             LineInfo1Class[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {
@@ -98,21 +98,21 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_Array_LineInfo2Struct()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_Array_LineInfo2Struct?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_Array_LineInfo2Struct>(CreateFileInfo(count), $"{count}"),
-                    new ParamWrapper<int>(capacity == count ? TestDataSource.Instance[count - 1].LineNumber : capacity, capacity.ToString())
+                    group,
+                    new ParamWrapper<FileInfo_Array_LineInfo2Struct?>(operation == "add" ? null : CreateFileInfo(stats), operation),
+                    new ParamWrapper<FileInfo_Array_LineInfo2Struct>(CreateFileInfo(stats), $"{stats.Count}/{stats.MaxLineNo}"),
+                    capacity == stats.Count ? stats.MaxLineNo : capacity
                 };
             }
 
-            static FileInfo_Array_LineInfo2Struct CreateFileInfo(int count)
+            static FileInfo_Array_LineInfo2Struct CreateFileInfo(TestDataStats stats)
             {
-                int capacity = TestDataSource.Instance[count - 1].LineNumber;
-                FileInfo_Array_LineInfo2Struct fileInfo = new(capacity);
-                for (int i = 0; i < count; i++)
+                FileInfo_Array_LineInfo2Struct fileInfo = new(stats.MaxLineNo);
+                for (int i = 0; i < stats.Count; i++)
                 {
                     fileInfo[TestDataSource.Instance[i].LineNumber - 1] = new(TestDataSource.Instance[i]);
                 }
@@ -123,11 +123,12 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_Array_LineInfo2Struct))]
         public void Array_LineInfo2Struct(
+            string group,
             ParamWrapper<FileInfo_Array_LineInfo2Struct?> target,
             ParamWrapper<FileInfo_Array_LineInfo2Struct> source,
-            ParamWrapper<int> capacity)
+            int capacity)
         {
-            FileInfo_Array_LineInfo2Struct t = target.Value ?? new(capacity.Value);
+            FileInfo_Array_LineInfo2Struct t = target.Value ?? new(capacity);
             LineInfo2Struct[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {
@@ -141,21 +142,21 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_Array_LineInfo2Class()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_Array_LineInfo2Class?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_Array_LineInfo2Class>(CreateFileInfo(count), $"{count}"),
-                    new ParamWrapper<int>(capacity == count ? TestDataSource.Instance[count - 1].LineNumber : capacity, capacity.ToString())
+                    group,
+                    new ParamWrapper<FileInfo_Array_LineInfo2Class?>(operation == "add" ? null : CreateFileInfo(stats), operation),
+                    new ParamWrapper<FileInfo_Array_LineInfo2Class>(CreateFileInfo(stats), $"{stats.Count}/{stats.MaxLineNo}"),
+                    capacity == stats.Count ? stats.MaxLineNo : capacity
                 };
             }
 
-            static FileInfo_Array_LineInfo2Class CreateFileInfo(int count)
+            static FileInfo_Array_LineInfo2Class CreateFileInfo(TestDataStats stats)
             {
-                int capacity = TestDataSource.Instance[count - 1].LineNumber;
-                FileInfo_Array_LineInfo2Class fileInfo = new(capacity);
-                for (int i = 0; i < count; i++)
+                FileInfo_Array_LineInfo2Class fileInfo = new(stats.MaxLineNo);
+                for (int i = 0; i < stats.Count; i++)
                 {
                     fileInfo[TestDataSource.Instance[i].LineNumber - 1] = new(TestDataSource.Instance[i]);
                 }
@@ -166,11 +167,12 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_Array_LineInfo2Class))]
         public void Array_LineInfo2Class(
+            string group,
             ParamWrapper<FileInfo_Array_LineInfo2Class?> target,
             ParamWrapper<FileInfo_Array_LineInfo2Class> source,
-            ParamWrapper<int> capacity)
+            int capacity)
         {
-            FileInfo_Array_LineInfo2Class t = target.Value ?? new(capacity.Value);
+            FileInfo_Array_LineInfo2Class t = target.Value ?? new(capacity);
             LineInfo2Class[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {

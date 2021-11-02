@@ -10,12 +10,13 @@ namespace LineInfoBenchmarks
     {
         public IEnumerable<object[]> Args_SortedDictionary_LineInfo1Struct()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct>(CreateFileInfo(count), $"{count}"),
+                    group,
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct?>(operation == "add" ? null : CreateFileInfo(stats.Count), operation),
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct>(CreateFileInfo(stats.Count), $"{stats.Count}"),
                     capacity
                 };
             }
@@ -34,6 +35,7 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_SortedDictionary_LineInfo1Struct))]
         public void SortedDictionary_LineInfo1Struct(
+            string group,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct?> target,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo1Struct> source,
             int capacity)
@@ -58,12 +60,13 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_SortedDictionary_LineInfo1Class()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class>(CreateFileInfo(count), $"{count}"),
+                    group,
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class?>(operation == "add" ? null : CreateFileInfo(stats.Count), operation),
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class>(CreateFileInfo(stats.Count), $"{stats.Count}"),
                     capacity
                 };
             }
@@ -82,6 +85,7 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_SortedDictionary_LineInfo1Class))]
         public void SortedDictionary_LineInfo1Class(
+            string group,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class?> target,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo1Class> source,
             int capacity)
@@ -105,12 +109,13 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_SortedDictionary_LineInfo2Struct()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct>(CreateFileInfo(count), $"{count}"),
+                    group,
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct?>(operation == "add" ? null : CreateFileInfo(stats.Count), operation),
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct>(CreateFileInfo(stats.Count), $"{stats.Count}"),
                     capacity
                 };
             }
@@ -129,6 +134,7 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_SortedDictionary_LineInfo2Struct))]
         public void SortedDictionary_LineInfo2Struct(
+            string group,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct?> target,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo2Struct> source,
             int capacity)
@@ -153,12 +159,13 @@ namespace LineInfoBenchmarks
 
         public IEnumerable<object[]> Args_SortedDictionary_LineInfo2Class()
         {
-            foreach ((string operation, int count, int capacity) in OperationCountAndCapacity())
+            foreach ((string group, string operation, TestDataStats stats, int capacity, int branchCapacity) in GenericArgumentsSource())
             {
                 yield return new object[]
                 {
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class?>(operation == "add" ? null : CreateFileInfo(count), operation),
-                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class>(CreateFileInfo(count), $"{count}"),
+                    group,
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class?>(operation == "add" ? null : CreateFileInfo(stats.Count), operation),
+                    new ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class>(CreateFileInfo(stats.Count), $"{stats.Count}"),
                     capacity
                 };
             }
@@ -177,6 +184,7 @@ namespace LineInfoBenchmarks
         [Benchmark]
         [ArgumentsSource(nameof(Args_SortedDictionary_LineInfo2Class))]
         public void SortedDictionary_LineInfo2Class(
+            string group,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class?> target,
             ParamWrapper<FileInfo_SortedDictionary_LineInfo2Class> source,
             int capacity)
