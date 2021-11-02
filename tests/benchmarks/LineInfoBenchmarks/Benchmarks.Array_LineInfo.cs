@@ -85,13 +85,14 @@ namespace LineInfoBenchmarks
             int capacity)
         {
             FileInfo_Array_LineInfo1Class t = target.Value ?? new(capacity);
-            LineInfo1Class[] sourceLines = source.Value.Lines;
+            LineInfo1Class?[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {
                 if (sourceLines[i] != null)
                 {
-                    if (t[i] == null) t[i] = new();
-                    t[i].Merge(sourceLines[i]);
+                    LineInfo1Class? ti;
+                    if ((ti = t[i]) == null) t[i] = ti = new();
+                    ti.Merge(sourceLines[i]!);
                 }
             }
         }
@@ -173,13 +174,14 @@ namespace LineInfoBenchmarks
             int capacity)
         {
             FileInfo_Array_LineInfo2Class t = target.Value ?? new(capacity);
-            LineInfo2Class[] sourceLines = source.Value.Lines;
+            LineInfo2Class?[] sourceLines = source.Value.Lines;
             for (int i = 0; i < sourceLines.Length; i++)
             {
                 if (sourceLines[i] != null)
                 {
-                    if (t[i] == null) t[i] = new();
-                    t[i].Merge(sourceLines[i]);
+                    LineInfo2Class? ti;
+                    if ((ti = t[i]) == null) t[i] = ti = new();
+                    ti.Merge(sourceLines[i]!);
                 }
             }
         }

@@ -85,9 +85,13 @@ namespace LineInfoBenchmarks
 
     public class FileInfo_Array_LineInfo1Class
     {
-        public LineInfo1Class[] Lines;
+        public LineInfo1Class?[] Lines;
         public FileInfo_Array_LineInfo1Class(int capactity) => Lines = new LineInfo1Class[capactity];
-        public ref LineInfo1Class this[int index] { get { ArrayExtensions.EnsureSize(ref Lines, index); return ref Lines[index]; } }
+        public LineInfo1Class? this[int index]
+        {
+            get { ArrayExtensions.EnsureSize(ref Lines, index); return Lines[index]; }
+            set { ArrayExtensions.EnsureSize(ref Lines, index); Lines[index] = value; }
+        }
     }
 
     public class FileInfo_Array_LineInfo2Struct
@@ -99,8 +103,12 @@ namespace LineInfoBenchmarks
 
     public class FileInfo_Array_LineInfo2Class
     {
-        public LineInfo2Class[] Lines;
+        public LineInfo2Class?[] Lines;
         public FileInfo_Array_LineInfo2Class(int capactity) => Lines = new LineInfo2Class[capactity];
-        public ref LineInfo2Class this[int index] { get { ArrayExtensions.EnsureSize(ref Lines, index); return ref Lines[index]; } }
+        public LineInfo2Class? this[int index]
+        {
+            get { ArrayExtensions.EnsureSize(ref Lines, index); return Lines[index]; }
+            set { ArrayExtensions.EnsureSize(ref Lines, index); Lines[index] = value; }
+        }
     }
 }
