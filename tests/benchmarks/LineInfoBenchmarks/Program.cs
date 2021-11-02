@@ -6,6 +6,7 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Exporters.Json;
 using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using Mawosoft.Extensions.BenchmarkDotNet;
@@ -28,6 +29,7 @@ namespace LineInfoBenchmarks
                 .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: true)))
                 .AddAnalyser(new TestDataAnalyser(runOnce: true))
                 .AddFilter(whatifFilter)
+                .WithOrderer(new ParamGroupOrderer(DefaultOrderer.Instance))
                 //.WithSummaryStyle(SummaryStyle.Default.WithTimeUnit(TimeUnit.Microsecond))
                 .WithOption(ConfigOptions.DisableOptimizationsValidator, true);
 
