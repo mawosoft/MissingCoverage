@@ -34,7 +34,7 @@ namespace LineInfoBenchmarks
                     line.LineNumber = i;
                     line.Hits = random.Next(hitCeiling);
                     line.TotalBranches = random.Next(branchCeiling) != 0 ? 0 : 2;
-                    if (line.Hits != 0)
+                    if (line.Hits != 0 && line.TotalBranches != 0)
                     {
                         line.CoveredBranches = random.Next(1, 3);
                     }
