@@ -109,6 +109,7 @@ namespace LineInfoBenchmarks
     public class BranchInfo1Class
     {
         public int CoveredBranches, TotalBranches;
+        public BranchInfo1Class() { }
         public BranchInfo1Class(LineInfo1Class other)
         {
             CoveredBranches = other.CoveredBranches;
