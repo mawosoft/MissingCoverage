@@ -32,7 +32,7 @@ namespace LineInfoBenchmarks
             }
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         [ArgumentsSource(nameof(Args_Array_LineInfo1Struct))]
         public void Array_LineInfo1Struct(
             string group,
@@ -47,7 +47,7 @@ namespace LineInfoBenchmarks
                 ref LineInfo1Struct line = ref sourceLines[i];
                 if (line.LineNumber != 0)
                 {
-                    t[i].Merge(line);
+                    t[i].MergeRef(ref line);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace LineInfoBenchmarks
                 ref LineInfo2Struct line = ref sourceLines[i];
                 if (line.TotalBranches != 0)
                 {
-                    t[i].Merge(line);
+                    t[i].MergeRef(ref line);
                 }
             }
         }

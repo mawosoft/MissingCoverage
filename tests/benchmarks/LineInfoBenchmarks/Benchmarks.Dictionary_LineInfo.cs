@@ -32,7 +32,7 @@ namespace LineInfoBenchmarks
             }
         }
 
-        [Benchmark(Baseline = true)]
+        [Benchmark]
         [ArgumentsSource(nameof(Args_Dictionary_LineInfo1Struct))]
         public void Dictionary_LineInfo1Struct(
             string group,

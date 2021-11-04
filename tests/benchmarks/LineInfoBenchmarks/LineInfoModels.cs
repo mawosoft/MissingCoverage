@@ -17,7 +17,16 @@ namespace LineInfoBenchmarks
             CoveredBranches = other.CoveredBranches;
             TotalBranches = other.TotalBranches;
         }
-        public void Merge(in LineInfo1Struct other)
+        // TODO does ref vs in have any performance impact (e.g. defensive copy on latter)?
+        // See also LineInfo2Struct, BranchInfo1Struct
+        public void MergeRef(ref LineInfo1Struct other)
+        {
+            LineNumber = other.LineNumber;
+            Hits = Math.Max(Hits, other.Hits);
+            CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
+            TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
+        }
+        public void Merge(LineInfo1Struct other)
         {
             LineNumber = other.LineNumber;
             Hits = Math.Max(Hits, other.Hits);
@@ -60,7 +69,18 @@ namespace LineInfoBenchmarks
                 TotalBranches = 1;
             }
         }
-        public void Merge(in LineInfo2Struct other)
+        public void MergeRef(ref LineInfo2Struct other)
+        {
+            Hits = Math.Max(Hits, other.Hits);
+            CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
+            TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
+        }
+        public void Merge(LineInfo2Struct other)
         {
             Hits = Math.Max(Hits, other.Hits);
             CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
@@ -99,7 +119,8 @@ namespace LineInfoBenchmarks
             CoveredBranches = other.CoveredBranches;
             TotalBranches = other.TotalBranches;
         }
-        public void Merge(in BranchInfo1Struct other)
+        // TODO ref? in? See notes on LineInfo1Struct. This however is only 2x int, byref might make it worse
+        public void Merge(BranchInfo1Struct other)
         {
             CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
             TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
