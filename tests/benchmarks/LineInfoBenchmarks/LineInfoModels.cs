@@ -111,6 +111,45 @@ namespace LineInfoBenchmarks
         }
     }
 
+    public struct LineInfo3Struct
+    {
+        public int Hits;
+        public ushort CoveredBranches, TotalBranches;
+        public LineInfo3Struct(LineInfo1Class other)
+        {
+            Hits = other.Hits;
+            CoveredBranches = (ushort)other.CoveredBranches;
+            TotalBranches = (ushort)other.TotalBranches;
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
+        }
+        public void MergeRef(ref LineInfo3Struct other)
+        {
+            Hits = Math.Max(Hits, other.Hits);
+            CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
+            TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
+        }
+        public void Merge(LineInfo3Struct other)
+        {
+            Hits = Math.Max(Hits, other.Hits);
+            CoveredBranches = Math.Max(CoveredBranches, other.CoveredBranches);
+            TotalBranches = Math.Max(TotalBranches, other.TotalBranches);
+            if (TotalBranches == 0)
+            {
+                // "Line exists" indicator if used in array indexed by line number.
+                TotalBranches = 1;
+            }
+        }
+    }
+
     public struct BranchInfo1Struct
     {
         public int CoveredBranches, TotalBranches;

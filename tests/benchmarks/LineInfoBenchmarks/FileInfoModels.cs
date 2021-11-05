@@ -113,6 +113,13 @@ namespace LineInfoBenchmarks
         }
     }
 
+    public class FileInfo_Array_LineInfo3Struct
+    {
+        public LineInfo3Struct[] Lines;
+        public FileInfo_Array_LineInfo3Struct(int capactity) => Lines = new LineInfo3Struct[capactity];
+        public ref LineInfo3Struct this[int index] { get { ArrayExtensions.EnsureSize(ref Lines, index); return ref Lines[index]; } }
+    }
+
     public class FileInfo_Array_HitsFlagsInt_Dictionary_BranchInfo1Struct
     {
         public const int IsLine = 1 << ((sizeof(int) * 8) - 1);

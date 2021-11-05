@@ -22,8 +22,9 @@ namespace LineInfoBenchmarks
             int count = Math.Min(1000, TestDataSource.Instance.Count);
             TestDataStats stats = new(TestDataSource.Instance.Take(count));
             yield return ("1", "add", stats, 4, 4);
-            yield return ("2", "add", stats, count, stats.Branches);
-            yield return ("3", "update", stats, 0, 0);
+            yield return ("2", "add", stats, 600, 60);
+            yield return ("3", "add", stats, count, stats.Branches);
+            yield return ("4", "update", stats, 0, 0);
         }
     }
 }

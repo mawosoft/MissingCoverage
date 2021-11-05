@@ -33,6 +33,7 @@ namespace LineInfoBenchmarks
         }
 
         [Benchmark]
+        [BenchmarkCategory("OfInterest")]
         [ArgumentsSource(nameof(Args_Array_HitsFlagsInt_Dictionary_BranchInfo1Struct))]
         public void Array_HitsFlagsInt_Dictionary_BranchInfo1Struct(
             string group,
@@ -81,6 +82,7 @@ namespace LineInfoBenchmarks
         }
 
         [Benchmark]
+        [BenchmarkCategory("OfInterest")]
         [ArgumentsSource(nameof(Args_Array_HitsFlagsInt_Dictionary_BranchInfo1Class))]
         public void Array_HitsFlagsInt_Dictionary_BranchInfo1Class(
             string group,
