@@ -55,8 +55,9 @@ namespace XmlBenchmarks
                 .ReplaceColumnCategory(new JobColumnSelectionProvider("-all +Job"))
                 .ReplaceLoggers(ConsoleLogger.Unicode)
                 .ReplaceExporters(MarkdownExporter.Console, JsonExporter.FullCompressed)
-                .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: false)))
+                .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddFilter(whatifFilter)
+                .WithCultureInfo(CultureInfo.CurrentCulture)
                 .WithOption(ConfigOptions.DisableOptimizationsValidator, true); // We do get a warning anyway
             if (_printFileInfo)
             {
@@ -72,7 +73,8 @@ namespace XmlBenchmarks
             if (!whatifFilter.Enabled && args.Length == 0 && Debugger.IsAttached)
             {
                 BenchmarkRunInfos runInfos = new(config, BenchmarkRunInfos.FastInProcessJob);
-                runInfos.ConvertAssemblyToBenchmarks(typeof(Program).Assembly);
+                //runInfos.ConvertAssemblyToBenchmarks(typeof(Program).Assembly);
+                runInfos.ConvertMethodsToBenchmarks(typeof(XmlLoadAndParseBenchmarks), "ByteSpan_XmlReader_Parallel");
                 summaries = runInfos.RunAll();
             }
             else

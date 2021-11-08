@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -11,6 +12,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace XmlBenchmarks
 {
+    [ThreadingDiagnoser]
     public class XmlParseOnlyBenchmarks
     {
         public IEnumerable<FileBytesWrapper> FileBytes_Arguments() => TestFiles.GetWrappedFileBytes();
@@ -100,6 +102,39 @@ namespace XmlBenchmarks
                         sum += fileName.Length + coverage.Length + number.Length + hits.Length;
                     }
                 }
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(XElement_Arguments))]
+        public int XElement_Linq_LinesPerClass_Parallel(FileParamWrapper<XElement> file)
+        {
+            int sum = 0;
+            XElement element = file.Value;
+            if (element.Name == "coverage")
+            {
+                ParallelQuery<XElement> query =
+                    from XElement @class
+                    in element.Elements("packages").Elements("package").Elements("classes").Elements("class").AsParallel()
+                    select @class;
+                query.ForAll(@class =>
+                {
+                    string fileName = @class.Attribute("filename")?.Value ?? string.Empty;
+                    IEnumerable<XElement> lines =
+                        from l in @class.Elements("lines").Elements("line")
+                        where l.Attribute("hits")?.Value == "0"
+                              || (l.Attribute("condition-coverage") is XAttribute attr
+                                  && !attr.Value.StartsWith("100%", StringComparison.Ordinal))
+                        select l;
+                    foreach (XElement line in lines)
+                    {
+                        string coverage = line.Attribute("condition-coverage")?.Value ?? string.Empty;
+                        string number = line.Attribute("number")?.Value ?? string.Empty;
+                        string hits = line.Attribute("hits")?.Value ?? string.Empty;
+                        Interlocked.Add(ref sum, fileName.Length + coverage.Length + number.Length + hits.Length);
+                    }
+                });
             }
             return sum;
         }

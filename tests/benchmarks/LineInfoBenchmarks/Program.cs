@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
 using System.Diagnostics;
+using System.Globalization;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Exporters;
@@ -26,11 +27,11 @@ namespace LineInfoBenchmarks
                 // except that it also excludes "Metrics" (memory allocation in this case).
                 .ReplaceExporters(MarkdownExporter.Console, JsonExporter.FullCompressed)
                 .ReplaceLoggers(ConsoleLogger.Unicode)
-                .AddDiagnoser(new MemoryDiagnoser(new MemoryDiagnoserConfig(displayGenColumns: true)))
+                .AddDiagnoser(MemoryDiagnoser.Default)
                 .AddAnalyser(new TestDataAnalyser(runOnce: true))
                 .AddFilter(whatifFilter)
                 .WithOrderer(new ParamGroupOrderer(DefaultOrderer.Instance))
-                //.WithSummaryStyle(SummaryStyle.Default.WithTimeUnit(TimeUnit.Microsecond))
+                .WithCultureInfo(CultureInfo.CurrentCulture)
                 .WithOption(ConfigOptions.DisableOptimizationsValidator, true);
 
             Summary[] summaries;

@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
@@ -16,6 +18,7 @@ using BenchmarkDotNet.Validators;
 
 namespace XmlBenchmarks
 {
+    [ThreadingDiagnoser]
     public class XmlLoadAndParseBenchmarks : IValidator
     {
         private readonly XmlParseOnlyBenchmarks _parser = new();
@@ -100,6 +103,16 @@ namespace XmlBenchmarks
         public int XElement_Linq_LinesPerClass(FileBytesWrapper file)
         {
             return _parser.XElement_Linq_LinesPerClass(
+                new FileParamWrapper<XElement>(
+                    XElement.Load(new MemoryStream(file.Value)),
+                    file.DisplayText!));
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(FileBytes_Arguments))]
+        public int XElement_Linq_LinesPerClass_Parallel(FileBytesWrapper file)
+        {
+            return _parser.XElement_Linq_LinesPerClass_Parallel(
                 new FileParamWrapper<XElement>(
                     XElement.Load(new MemoryStream(file.Value)),
                     file.DisplayText!));
@@ -294,10 +307,9 @@ namespace XmlBenchmarks
         [ArgumentsSource(nameof(FileBytes_Arguments))]
         public int StringSpan_IndexOf(FileBytesWrapper file)
         {
-            int sum = 0;
             ReadOnlySpan<char> content = Encoding.UTF8.GetString(new ReadOnlySpan<byte>(file.Value)).AsSpan();
             ReadOnlySpan<char> zero = "0".AsSpan();
-
+            int sum = 0;
             int classStart, classEnd;
 
             // StringComparison.Ordinal is default for IndexOf
@@ -365,6 +377,240 @@ namespace XmlBenchmarks
                 }
             }
             return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(FileBytes_Arguments))]
+        public int ByteSpan_IndexOf(FileBytesWrapper file)
+        {
+            ReadOnlySpan<byte> content = file.Value.AsSpan();
+            ReadOnlySpan<byte> zero = Encoding.UTF8.GetBytes("0").AsSpan();
+            ReadOnlySpan<byte> hundredPercent = Encoding.UTF8.GetBytes("100%").AsSpan();
+            ReadOnlySpan<byte> gt = Encoding.UTF8.GetBytes(">").AsSpan();
+            ReadOnlySpan<byte> quote = Encoding.UTF8.GetBytes("\"").AsSpan();
+            ReadOnlySpan<byte> tagClassStart = Encoding.UTF8.GetBytes("<class ").AsSpan();
+            ReadOnlySpan<byte> tagClassEnd = Encoding.UTF8.GetBytes("</class>").AsSpan();
+            ReadOnlySpan<byte> attrFilename = Encoding.UTF8.GetBytes("filename=\"").AsSpan();
+            ReadOnlySpan<byte> tagMethodsEnd = Encoding.UTF8.GetBytes("</methods>").AsSpan();
+            ReadOnlySpan<byte> tagLinesStart = Encoding.UTF8.GetBytes("<lines>").AsSpan();
+            ReadOnlySpan<byte> tagLinesEnd = Encoding.UTF8.GetBytes("</lines>").AsSpan();
+            ReadOnlySpan<byte> tagLineStart = Encoding.UTF8.GetBytes("<line ").AsSpan();
+            ReadOnlySpan<byte> attrNumber = Encoding.UTF8.GetBytes("number=\"").AsSpan();
+            ReadOnlySpan<byte> attrHits = Encoding.UTF8.GetBytes("hits=\"").AsSpan();
+            ReadOnlySpan<byte> attrCoverage = Encoding.UTF8.GetBytes("condition-coverage=\"").AsSpan();
+            int sum = 0;
+            int classStart, classEnd;
+
+            while ((classStart = content.IndexOf(tagClassStart)) >= 0)
+            {
+                ReadOnlySpan<byte> classContent = content.Slice(classStart);
+                classEnd = classContent.IndexOf(tagClassEnd);
+                classContent = classContent.Slice(0, classEnd);
+                content = content.Slice(classStart + classEnd);
+                int end = classContent.IndexOf(gt);
+                ReadOnlySpan<byte> classTag = classContent.Slice(0, end);
+                int attrStart = classTag.IndexOf(attrFilename) + 10;
+                ReadOnlySpan<byte> fileName = classTag.Slice(attrStart);
+                end = fileName.IndexOf(quote);
+                fileName = fileName.Slice(0, end);
+
+                int linesStart, linesEnd, methodsEnd;
+                ReadOnlySpan<byte> linesContent;
+                methodsEnd = classContent.IndexOf(tagMethodsEnd);
+                if (methodsEnd >= 0)
+                {
+                    linesContent = classContent.Slice(methodsEnd);
+                    linesStart = linesContent.IndexOf(tagLinesStart) + methodsEnd + 1;
+                }
+                else
+                {
+                    linesStart = classContent.IndexOf(tagLinesStart) + 1;
+                }
+                linesContent = classContent.Slice(linesStart);
+                linesEnd = linesContent.IndexOf(tagLinesEnd);
+                linesContent = linesContent.Slice(0, linesEnd);
+                int lineStart, lineEnd;
+                while ((lineStart = linesContent.IndexOf(tagLineStart)) >= 0)
+                {
+                    ReadOnlySpan<byte> lineContent = linesContent.Slice(lineStart);
+                    lineEnd = lineContent.IndexOf(gt);
+                    lineContent = lineContent.Slice(0, lineEnd);
+                    linesContent = linesContent.Slice(lineStart + lineEnd);
+                    ReadOnlySpan<byte> number = default, hits = default, coverage = default;
+                    attrStart = lineContent.IndexOf(attrNumber) + 8;
+                    if (attrStart >= 8)
+                    {
+                        number = lineContent.Slice(attrStart);
+                        end = number.IndexOf(quote);
+                        number = number.Slice(0, end);
+                    }
+                    attrStart = lineContent.IndexOf(attrHits) + 6;
+                    if (attrStart >= 6)
+                    {
+                        hits = lineContent.Slice(attrStart);
+                        end = hits.IndexOf(quote);
+                        hits = hits.Slice(0, end);
+                    }
+                    attrStart = lineContent.IndexOf(attrCoverage) + 20;
+                    if (attrStart >= 20)
+                    {
+                        coverage = lineContent.Slice(attrStart);
+                        end = coverage.IndexOf(quote);
+                        coverage = coverage.Slice(0, end);
+                    }
+                    if (hits.SequenceEqual(zero) || (coverage.Length != 0 && !coverage.StartsWith(hundredPercent)))
+                    {
+                        sum += fileName.Length + coverage.Length + number.Length + hits.Length;
+                    }
+                }
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(FileBytes_Arguments))]
+        public int ByteSpan_XmlReader_Tasks(FileBytesWrapper file)
+        {
+            ReadOnlySpan<byte> content = file.Value.AsSpan();
+            ReadOnlySpan<byte> tagClassStart = Encoding.UTF8.GetBytes("<class ").AsSpan();
+            ReadOnlySpan<byte> tagClassEnd = Encoding.UTF8.GetBytes("</class>").AsSpan();
+            List<Task<int>> classes = new(50);
+
+            int classStart, classEnd = 0;
+            int classStartAbsolute = 0;
+
+            while ((classStart = content.IndexOf(tagClassStart)) >= 0)
+            {
+                classStartAbsolute += classStart + classEnd;
+                ReadOnlySpan<byte> classContent = content.Slice(classStart);
+                classEnd = classContent.IndexOf(tagClassEnd) + tagClassEnd.Length;
+                content = content.Slice(classStart + classEnd);
+                classes.Add(Task.Factory.StartNew(
+                    ReadClass, new MemoryStream(file.Value, classStartAbsolute, classEnd)));
+            }
+            int[] sums = Task.WhenAll(classes).GetAwaiter().GetResult();
+            int sum = 0;
+            for (int i = 0; i < sums.Length; i++) sum += sums[i];
+            return sum;
+
+            static int ReadClass(object? state)
+            {
+                int sum = 0;
+                MemoryStream ms = (MemoryStream)state!;
+                XmlReaderSettings settings = new() { DtdProcessing = DtdProcessing.Ignore };
+                XmlReader reader = XmlReader.Create(ms, settings);
+                if (!reader.ReadToFollowing("class")) throw new XmlException();
+                if (!reader.MoveToAttribute("filename")) throw new XmlException();
+                string fileName = reader.Value;
+                reader.MoveToElement();
+                reader.Read();
+                // NextSibling makes sure we skip over "class/methods/method/lines" directly to
+                // "class/lines".
+                if (!reader.ReadToNextSibling("lines")) throw new XmlException();
+                reader.Read();
+                while (reader.ReadToNextSibling("line"))
+                {
+                    if (!reader.MoveToFirstAttribute()) throw new XmlException();
+                    string coverage = string.Empty;
+                    string number = string.Empty;
+                    string hits = string.Empty;
+                    do
+                    {
+                        switch (reader.LocalName)
+                        {
+                            case "number":
+                                number = reader.Value;
+                                break;
+                            case "hits":
+                                hits = reader.Value;
+                                break;
+                            case "condition-coverage":
+                                coverage = reader.Value;
+                                break;
+                        }
+                    } while (reader.MoveToNextAttribute());
+                    if (hits == "0" || (coverage.Length != 0
+                                        && !coverage.StartsWith("100%", StringComparison.Ordinal)))
+                    {
+                        sum += fileName.Length + coverage.Length + number.Length + hits.Length;
+                    }
+                    reader.MoveToElement();
+                }
+                reader.Close();
+                ms.Dispose();
+                return sum;
+            }
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(FileBytes_Arguments))]
+        public int ByteSpan_XmlReader_Parallel(FileBytesWrapper file)
+        {
+            ReadOnlySpan<byte> content = file.Value.AsSpan();
+            ReadOnlySpan<byte> tagClassStart = Encoding.UTF8.GetBytes("<class ").AsSpan();
+            ReadOnlySpan<byte> tagClassEnd = Encoding.UTF8.GetBytes("</class>").AsSpan();
+            List<(int start, int count)> classes = new(50);
+
+            int classStart, classEnd = 0;
+            int classStartAbsolute = 0;
+
+            while ((classStart = content.IndexOf(tagClassStart)) >= 0)
+            {
+                classStartAbsolute += classStart + classEnd;
+                ReadOnlySpan<byte> classContent = content.Slice(classStart);
+                classEnd = classContent.IndexOf(tagClassEnd) + tagClassEnd.Length;
+                content = content.Slice(classStart + classEnd);
+                classes.Add((classStartAbsolute, classEnd));
+            }
+            int sumTotal = 0;
+            classes.AsParallel().ForAll(p =>
+            {
+                int sum = 0;
+                MemoryStream ms = new(file.Value, p.start, p.count);
+                XmlReaderSettings settings = new() { DtdProcessing = DtdProcessing.Ignore };
+                XmlReader reader = XmlReader.Create(ms, settings);
+                if (!reader.ReadToFollowing("class")) throw new XmlException();
+                if (!reader.MoveToAttribute("filename")) throw new XmlException();
+                string fileName = reader.Value;
+                reader.MoveToElement();
+                reader.Read();
+                // NextSibling makes sure we skip over "class/methods/method/lines" directly to
+                // "class/lines".
+                if (!reader.ReadToNextSibling("lines")) throw new XmlException();
+                reader.Read();
+                while (reader.ReadToNextSibling("line"))
+                {
+                    if (!reader.MoveToFirstAttribute()) throw new XmlException();
+                    string coverage = string.Empty;
+                    string number = string.Empty;
+                    string hits = string.Empty;
+                    do
+                    {
+                        switch (reader.LocalName)
+                        {
+                            case "number":
+                                number = reader.Value;
+                                break;
+                            case "hits":
+                                hits = reader.Value;
+                                break;
+                            case "condition-coverage":
+                                coverage = reader.Value;
+                                break;
+                        }
+                    } while (reader.MoveToNextAttribute());
+                    if (hits == "0" || (coverage.Length != 0
+                                        && !coverage.StartsWith("100%", StringComparison.Ordinal)))
+                    {
+                        sum += fileName.Length + coverage.Length + number.Length + hits.Length;
+                    }
+                    reader.MoveToElement();
+                }
+                reader.Close();
+                ms.Dispose();
+                Interlocked.Add(ref sumTotal, sum);
+            });
+            return sumTotal;
         }
     }
 }
