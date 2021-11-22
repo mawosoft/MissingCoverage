@@ -24,7 +24,7 @@ Options:
   -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
   -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
   -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
-  -lo|--latest-only                    For each subsequent filespec, uses only the newest of all matching files.
+  -lo|--latest-only                    For each source file, uses only the data from the newest of all matching report files.
   --                                   Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
 
 Filespecs:

@@ -1,150 +1,156 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Xml;
-using System.Xml.XPath;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal class CoberturaParser
+    /// <summary>Cobertura report parser</summary>
+    // There is currently no benefit in maintaining a state here between ctor and Parse().
+    internal static class CoberturaParser
     {
-        private static readonly XPathExpression s_xpathVerify = XPathExpression.Compile("/coverage/packages/package/classes/class/lines/line");
-        private static readonly XPathExpression s_xpathAltVerify = XPathExpression.Compile("/coverage/packages/class/lines/line");
-        private static readonly XPathExpression s_xpathSources = XPathExpression.Compile("/coverage/sources/source");
-        private static readonly XPathExpression s_xpathClasses = XPathExpression.Compile("/coverage/packages/package/classes/class");
-        private static readonly XPathExpression s_xpathAltClasses = XPathExpression.Compile("/coverage/packages/class");
-        private static readonly ConcurrentDictionary<(int hitThreshold, int coverageThreshold, int branchThreshold), XPathExpression> s_xpathLinesCached = new();
-        private static readonly Regex s_regexConditionCoverage = new(@"\((\d+)/(\d+)\)", RegexOptions.CultureInvariant);
-
-        private readonly XPathExpression _xpathClasses;
-
-        public XPathDocument Document { get; }
-
-        public CoberturaParser(string filePath)
+        /// <summary>
+        /// Parses a Cobertura report file and returns a new <see cref="CoverageResult"/>.
+        /// </summary>
+        public static CoverageResult Parse(string reportFilePath)
         {
-            Document = new XPathDocument(filePath);
-            _xpathClasses = VerifyDocumentAndGetXPathClasses();
-        }
+            DateTime reportTimestamp = File.GetLastWriteTime(reportFilePath);
+            // TODO Benchmark async vs sync single file and multi/parallel
+            // None of the ReadToXxx functions support async processing, plus there is extra overhead
+            // in the internal async implementation. Since a single report file seems the most common
+            // use case, we keep this sync for now.
+            XmlReaderSettings settings = new()
+            {
+                DtdProcessing = DtdProcessing.Ignore,
+                IgnoreComments = true,
+                IgnoreProcessingInstructions = true,
+                IgnoreWhitespace = true,
+                Async = false, // Explicit for clarity
+            };
+            using XmlReader reader = XmlReader.Create(reportFilePath, settings);
 
-        public CoberturaParser(Stream stream)
-        {
-            Document = new XPathDocument(stream);
-            _xpathClasses = VerifyDocumentAndGetXPathClasses();
-        }
+            while (reader.Read() && reader.NodeType != XmlNodeType.Element) { /* do nothing*/ }
+            if (reader.Name != "coverage" || reader.AttributeCount < 2
+                || reader.GetAttribute("profilerVersion") != null
+                || reader.GetAttribute("clover") != null
+                || reader.GetAttribute("generated") != null)
+            {
+                ThrowXmlException(reader, "This is not a valid Cobertura report.");
+            }
 
-        private XPathExpression VerifyDocumentAndGetXPathClasses()
-        {
-            XPathNavigator navi = Document.CreateNavigator();
-            if (navi.SelectSingleNode(s_xpathVerify) != null)
-            {
-                return s_xpathClasses;
-            }
-            else if (navi.SelectSingleNode(s_xpathAltVerify) != null)
-            {
-                return s_xpathAltClasses;
-            }
-            ThrowXmlException(null, "This is not a valid Cobertura report.");
-            throw null; // Compiler doesn't seem to recognize [DoesNotReturn] attribute?
-        }
-
-        public CoverageResult Parse(int hitThreshold, int coverageThreshold, int branchThreshold,
-                                    Func<string, IReadOnlyList<string>, string>? filePathResolver)
-        {
-            if (!s_xpathLinesCached.TryGetValue((hitThreshold, coverageThreshold, branchThreshold),
-                                                out XPathExpression? xpathLines))
-            {
-                xpathLines = CreateCachedXpathLines(hitThreshold, coverageThreshold, branchThreshold);
-            }
-            if (filePathResolver == null)
-            {
-                filePathResolver = ResolveFilePath;
-            }
-            XPathNavigator navi = Document.CreateNavigator();
             List<string> sourceDirectories = new();
-            XPathNodeIterator sources = navi.Select(s_xpathSources);
-            foreach (XPathNavigator source in sources)
+            if (reader.ReadToChild("") && reader.Name == "sources" && reader.ReadToChild("source"))
             {
-                if (source.Value.Length > 0)
+                // <sources> is optional
+                do
                 {
-                    sourceDirectories.Add(source.Value);
-                }
+                    // Note ReadElementContentAsXxx reads the content of the current element and moves past it.
+                    // Hence we can't use ReadToNextSibling() because we probably are already on the next sibling.
+                    string sourcedir = reader.ReadElementContentAsString();
+                    if (sourcedir.Length == 2 && sourcedir[1] == ':' && Path.VolumeSeparatorChar == ':')
+                    {
+                        sourcedir += Path.DirectorySeparatorChar;
+                    }
+                    else
+                    {
+                        sourcedir = NormalizePathSeparators(sourcedir);
+                    }
+                    sourceDirectories.Add(sourcedir);
+                    while (reader.NodeType != XmlNodeType.Element && reader.NodeType != XmlNodeType.EndElement && reader.Read()) { /* do nothing*/ }
+                } while (reader.Name == "source");
             }
-            // We temporarly use a dictionary of relative source file names to avoid resolving file names we
-            // don't need, or the same file name multiple times.
-            Dictionary<string, SourceFileInfo> sourceFiles = new();
-            XPathNodeIterator classes = navi.Select(_xpathClasses);
-            foreach (XPathNavigator @class in classes)
+
+            // We temporarly use a dictionary of relative source file names to avoid resolving file names
+            // multiple times. Also, sourceFileInfo holds the last processed one, which is the most likely
+            // to appear again.
+            Dictionary<string, SourceFileInfo> sourceFiles = new(StringComparer.OrdinalIgnoreCase);
+            SourceFileInfo? sourceFileInfo = null;
+            while (reader.ReadToFollowing("class"))
             {
-                string fileName = @class.GetAttribute("filename", "");
+                string fileName = reader.GetAttribute("filename") ?? string.Empty;
                 if (fileName.Length == 0)
                 {
-                    ThrowXmlException(@class, "Invalid or missing attribute 'filename'.");
+                    ThrowInvalidOrMissingAttribute(reader, "filename");
                 }
-                bool newFile = false;
-                if (!sourceFiles.TryGetValue(fileName, out SourceFileInfo fileInfo))
+                if (sourceFileInfo == null
+                    || !fileName.Equals(sourceFileInfo.SourceFilePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    fileInfo = new(fileName);
-                    newFile = true;
-                }
-                XPathNodeIterator lines = @class.Select(xpathLines);
-                foreach (XPathNavigator line in lines)
-                {
-                    LineInfo lineInfo = default;
-                    string coverage = line.GetAttribute("condition-coverage", "");
-                    if (coverage.Length != 0)
+                    fileName = NormalizePathSeparators(fileName);
+                    if (sourceFileInfo == null
+                        || !fileName.Equals(sourceFileInfo.SourceFilePath, StringComparison.OrdinalIgnoreCase)
+)
                     {
-                        Match m = s_regexConditionCoverage.Match(coverage);
-                        if (!m.Success)
+                        if (!sourceFiles.TryGetValue(fileName, out sourceFileInfo))
                         {
-                            ThrowXmlException(line, "Invalid attribute value 'condition-coverage'.");
+                            sourceFileInfo = new(fileName, reportTimestamp);
+                            sourceFiles[fileName] = sourceFileInfo;
                         }
-                        lineInfo.CoveredBranches = int.Parse(m.Groups[1].Value);
-                        lineInfo.TotalBranches = int.Parse(m.Groups[2].Value);
                     }
-                    if (!int.TryParse(line.GetAttribute("number", ""), out lineInfo.LineNumber))
-                    {
-                        ThrowXmlException(line, "Invalid or missing attribute 'number'.");
-                    }
-                    if (!int.TryParse(line.GetAttribute("hits", ""), out lineInfo.Hits))
-                    {
-                        ThrowXmlException(line, "Invalid or missing attribute 'hits'.");
-                    }
-                    fileInfo.AddOrMergeLine(lineInfo);
                 }
-                if (newFile && fileInfo.Lines.Count > 0)
+                // Skip over "class/methods/method/lines" directly to "class/lines".
+                if (!reader.ReadToChild("lines"))
                 {
-                    sourceFiles[fileName] = fileInfo;
+                    ThrowXmlException(reader, "Subtree 'lines' not found.");
                 }
-            }
-            string inputFilePath = Document.CreateNavigator().BaseURI;
-            try
-            {
-                Uri uri = new(inputFilePath);
-                if (uri.IsFile)
+                if (reader.ReadToChild("line"))
                 {
-                    inputFilePath = uri.LocalPath;
+                    do
+                    {
+                        LineInfo lineInfo = default;
+                        if (!int.TryParse(reader.GetAttribute("number"), out int lineNumber) || lineNumber < 1)
+                        {
+                            ThrowInvalidOrMissingAttribute(reader, "number");
+                        }
+
+                        // 'hits' is not required in loose DTD.
+                        string? hitsAttr = reader.GetAttribute("hits");
+                        long hits = 0;
+                        if (hitsAttr != null && (!long.TryParse(hitsAttr, out hits) || hits < 0))
+                        {
+                            ThrowXmlException(reader, "Invalid attribute 'hits'.");
+                        }
+                        lineInfo.Hits = (int)Math.Min(hits, int.MaxValue);
+
+                        // Just "100%" is possible for non-branch, otherwise empty or "percent% (covered/total)"
+                        ReadOnlySpan<char> coverage = reader.GetAttribute("condition-coverage") ?? string.Empty;
+                        int pos = coverage.IndexOf('(');
+                        if (pos >= 0)
+                        {
+                            coverage = coverage.Slice(pos + 1);
+                            pos = coverage.IndexOf('/');
+                            if (pos < 0 || !ushort.TryParse(coverage.Slice(0, pos), out lineInfo.CoveredBranches))
+                            {
+                                ThrowInvalidConditionCoverage(reader);
+                            }
+                            coverage = coverage.Slice(pos + 1);
+                            pos = coverage.IndexOf(')');
+                            if (pos < 0 || !ushort.TryParse(coverage.Slice(0, pos), out lineInfo.TotalBranches))
+                            {
+                                ThrowInvalidConditionCoverage(reader);
+                            }
+                        }
+                        else if (coverage.Length != 0 && !coverage.SequenceEqual("100%"))
+                        {
+                            ThrowInvalidConditionCoverage(reader);
+                        }
+
+                        sourceFileInfo.AddOrMergeLine(lineNumber, lineInfo);
+
+                    } while (reader.ReadToNextSibling("line"));
                 }
             }
-            catch (Exception)
-            {
-            }
-            CoverageResult result = new(hitThreshold, coverageThreshold, branchThreshold, inputFilePath);
-            // Resolve relative file names against source dirs and add to result.
+            CoverageResult result = new(reportFilePath);
             foreach (SourceFileInfo fileInfo in sourceFiles.Values)
             {
-                string resolved = filePathResolver(fileInfo.FilePath, sourceDirectories);
-                SourceFileInfo sourceFileInfo = new(resolved, fileInfo.Lines);
-                result.SourceFiles.Add(sourceFileInfo.FilePath, sourceFileInfo);
+                fileInfo.SourceFilePath = ResolveFilePath(fileInfo.SourceFilePath, sourceDirectories);
+                result.AddOrMergeSourceFile(fileInfo);
             }
             return result;
         }
 
-        // Internal file path resolver if caller hasn't provided one
         private static string ResolveFilePath(string fileName, IReadOnlyList<string> sourceDirectories)
         {
             if (sourceDirectories.Count == 0)
@@ -155,7 +161,7 @@ namespace Mawosoft.MissingCoverage
             {
                 foreach (string sourceDirectory in sourceDirectories)
                 {
-                    string combined = Path.Combine(sourceDirectory,fileName);
+                    string combined = Path.Combine(sourceDirectory, fileName);
                     if (File.Exists(combined))
                     {
                         return combined;
@@ -165,32 +171,61 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        private static XPathExpression CreateCachedXpathLines(int hitThreshold, int coverageThreshold,
-                                                              int branchThreshold)
+        private static string NormalizePathSeparators(string path)
         {
-            // XPath expressions optimized for certain parameter sets.
-            string s = (hitThreshold, coverageThreshold, branchThreshold) switch
+            if (path.Length >= 7 && path.StartsWith("http", StringComparison.Ordinal))
             {
-                (1, 100, < 4) => "lines/line[@hits = '0' or (@condition-coverage and not(starts-with(@condition-coverage, '100%')))]",
-                (0, 100, < 4) => "lines/line[@condition-coverage and not(starts-with(@condition-coverage, '100%'))]",
-                (0, > 100, < 4) => "lines/line[@condition-coverage]",
-                (1, 0, < 4) => "lines/line[@hits = '0']",
-                (_, 0, < 4) => $"lines/line[number(@hits) < {hitThreshold}]",
-                (_, _, < 4) => $"lines/line[number(@hits) < {hitThreshold} or number(substring-before(@condition-coverage, '%')) < {coverageThreshold}]",
-                _ => $"lines/line[number(@hits) < {hitThreshold} or (number(substring-before(@condition-coverage, '%')) < {coverageThreshold} and number(substring-before(substring-after(@condition-coverage, '/'), ')')) >= {branchThreshold})]",
-            };
-            XPathExpression xpath = XPathExpression.Compile(s);
-            // We don't care if someone else has already added it, we can still return our result.
-            _ = s_xpathLinesCached.TryAdd((hitThreshold, coverageThreshold, branchThreshold), xpath);
-            return xpath;
+                // exclude http(s)://
+                int index = 4;
+                if (path[index] == 's') index++;
+                if (path.Length > (index + 2) && path[index + 1] == '/' && path[index + 2] == '/')
+                {
+                    return path;
+                }
+            }
+            char replace = Path.DirectorySeparatorChar == '/' ? '\\' : '/';
+            return path.Replace(replace, Path.DirectorySeparatorChar);
+        }
+
+        private static bool ReadToChild(this XmlReader reader, string name)
+        {
+            reader.MoveToElement();
+            if (reader.NodeType != XmlNodeType.Element)
+            {
+                ThrowXmlException(reader, "{nameof(ReadToChild)} called on non-XmlElement node.");
+            }
+            if (!reader.IsEmptyElement)
+            {
+                while (reader.Read() & reader.NodeType != XmlNodeType.EndElement)
+                {
+                    if (reader.NodeType == XmlNodeType.Element)
+                    {
+                        if (name.Length == 0 || name == reader.Name) return true;
+                        return reader.ReadToNextSibling(name);
+                    }
+                }
+            }
+            return false;
         }
 
         [DoesNotReturn]
-        private static void ThrowXmlException(XPathNavigator? node = null, string? message = null,
+        private static void ThrowInvalidConditionCoverage(XmlReader reader)
+        {
+            ThrowXmlException(reader, "Invalid attribute 'condition-coverage'.");
+        }
+
+        [DoesNotReturn]
+        private static void ThrowInvalidOrMissingAttribute(XmlReader reader, string attrName)
+        {
+            ThrowXmlException(reader, $"Invalid or missing attribute '{attrName}'.");
+        }
+
+        [DoesNotReturn]
+        private static void ThrowXmlException(XmlReader reader, string? message = null,
                                               Exception? innerException = null)
         {
             int lineNumber = 0, linePosition = 0;
-            if (node is IXmlLineInfo lineInfo && lineInfo.HasLineInfo())
+            if (reader is IXmlLineInfo lineInfo && lineInfo.HasLineInfo())
             {
                 lineNumber = lineInfo.LineNumber;
                 linePosition = lineInfo.LinePosition;

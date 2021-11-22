@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Xml;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
@@ -18,7 +19,7 @@ namespace Mawosoft.MissingCoverage
         public int BranchThreshold { get; set; } = 2;
         public bool LatestOnly { get; set; }
         public bool ShowHelpOnly { get; set; }
-        public List<string> InputFilePaths { get; } = new();
+        public HashSet<string> InputFilePaths { get; } = new(StringComparer.OrdinalIgnoreCase);
         public CoverageResult? MergedResult { get; private set; }
 
         internal static void Main(string[] args)
@@ -36,7 +37,7 @@ namespace Mawosoft.MissingCoverage
             }
             catch (Exception ex)
             {
-                Out.WriteLine(ex.Message);
+                WriteToolError("", ex.Message);
                 WriteHelpText();
                 return;
             }
@@ -52,10 +53,11 @@ namespace Mawosoft.MissingCoverage
             }
             catch (Exception ex)
             {
-                Out.WriteLine(ex.Message);
+                WriteToolError("", ex.Message);
             }
         }
 
+        // TODO allow arguments via settings file (project/solution specific)
         internal void ParseArguments(string[] args)
         {
             Matcher? matcher = null;
@@ -73,13 +75,10 @@ namespace Mawosoft.MissingCoverage
                         case "--":
                             canHaveOptions = false;
                             break;
-                        case "-h":
-                        case "--help":
+                        case "-h" or "--help":
                             ShowHelpOnly = true;
                             return; // Ignore remaining args
-                        case "-lo":
-                        case "--latest-only":
-                            ExecuteMatcher(); // Flush any collected patterns before setting flag
+                        case "-lo" or "--latest-only":
                             LatestOnly = true;
                             break;
                         case "-ht" or "--hit-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
@@ -110,10 +109,6 @@ namespace Mawosoft.MissingCoverage
                     }
                     matcher ??= new();
                     matcher.AddInclude(root.Length == 0 ? arg : Path.GetRelativePath(root, arg));
-                    if (LatestOnly)
-                    {
-                        ExecuteMatcher();
-                    }
                 }
             }
             if (!hasFileSpec)
@@ -133,31 +128,10 @@ namespace Mawosoft.MissingCoverage
                 {
                     DirectoryInfo dirInfo = new(lastRoot.Length == 0 ? "." : lastRoot);
                     PatternMatchingResult result = matcher.Execute(new DirectoryInfoWrapper(dirInfo));
-                    if (LatestOnly)
+                    foreach (FilePatternMatch file in result.Files)
                     {
-                        DateTime latestModified = DateTime.FromFileTime(0); // Reported for non-existing files.
-                        string? latestInputFilePath = null;
-                        foreach (FilePatternMatch file in result.Files)
-                        {
-                            string inputFilePath = Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path));
-                            DateTime lastModified = File.GetLastWriteTime(inputFilePath);
-                            if (lastModified > latestModified)
-                            {
-                                latestModified = lastModified;
-                                latestInputFilePath = inputFilePath;
-                            }
-                        }
-                        if (latestInputFilePath != null)
-                        {
-                            InputFilePaths.Add(latestInputFilePath);
-                        }
-                    }
-                    else
-                    {
-                        foreach (FilePatternMatch file in result.Files)
-                        {
-                            InputFilePaths.Add(Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path)));
-                        }
+                        // Hashset will exclude dupes but may not preserve order.
+                        InputFilePaths.Add(Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path)));
                     }
                     matcher = null;
                 }
@@ -166,14 +140,30 @@ namespace Mawosoft.MissingCoverage
 
         internal void ProcessInputFiles()
         {
-            MergedResult = new(HitThreshold, CoverageThreshold, BranchThreshold);
+            Out.WriteLine("Input files:");
+            MergedResult = new(LatestOnly);
             foreach (string inputFile in InputFilePaths)
             {
-                Out.WriteLine($"Input file: {inputFile}");
-                CoberturaParser parser = new(inputFile);
-                CoverageResult result = parser.Parse(MergedResult.HitThreshold, MergedResult.CoverageThreshold,
-                                                     MergedResult.BranchThreshold, null);
-                MergedResult.Merge(result);
+                try
+                {
+                    CoverageResult result = CoberturaParser.Parse(inputFile);
+                    MergedResult.Merge(result);
+                    Out.WriteLine(inputFile);
+                }
+                catch (Exception ex)
+                {
+                    int lineNumber = 0, linePosition = 0;
+                    string msgcode = "MC9002";
+                    if (ex is XmlException xex)
+                    {
+                        lineNumber = xex.LineNumber;
+                        linePosition = xex.LinePosition;
+                        msgcode = "MC9001";
+                    }
+                    Out.WriteLine($"{inputFile}({lineNumber},{linePosition}): error {msgcode}: {ex.Message}");
+                    MergedResult = null;
+                    break;
+                }
             }
         }
 
@@ -183,22 +173,33 @@ namespace Mawosoft.MissingCoverage
         {
             if (MergedResult == null)
                 return;
+            Out.WriteLine("Results:");
             List<SourceFileInfo> sourceFiles = new(MergedResult.SourceFiles.Values);
-            sourceFiles.Sort((x, y) => string.Compare(x.FilePath, y.FilePath));
+            sourceFiles.Sort((x, y) => string.Compare(x.SourceFilePath, y.SourceFilePath));
             foreach (SourceFileInfo sourceFile in sourceFiles)
             {
-                string fileName = sourceFile.FilePath;
-                List<LineInfo> lines = new(sourceFile.Lines.Values);
-                lines.Sort((x, y) => x.LineNumber - y.LineNumber);
-                foreach (LineInfo line in lines)
+                string fileName = sourceFile.SourceFilePath;
+                for (int lineNumber = 1; lineNumber <= sourceFile.LastLineNumber; lineNumber++)
                 {
-                    string msgcode = line.TotalBranches > 0 ? "MC0001" : "MC0002";
-                    string condition = string.Empty;
-                    if (line.TotalBranches > 0)
+                    ref LineInfo line = ref sourceFile[lineNumber];
+                    if (line.IsLine)
                     {
-                        condition = $" Condition coverage: {Math.Round((double)line.CoveredBranches / line.TotalBranches * 100)}% ({line.CoveredBranches}/{line.TotalBranches})";
+                        int percent = 0;
+                        if (line.TotalBranches > 0)
+                        {
+                            percent = (int)Math.Round((double)line.CoveredBranches / line.TotalBranches * 100);
+                        }
+                        if (line.Hits < HitThreshold || (line.TotalBranches >= BranchThreshold && percent < CoverageThreshold))
+                        {
+                            string msgcode = line.TotalBranches > 0 ? "MC0001" : "MC0002";
+                            string condition = string.Empty;
+                            if (line.TotalBranches > 0)
+                            {
+                                condition = $" Condition coverage: {percent}% ({line.CoveredBranches}/{line.TotalBranches})";
+                            }
+                            Out.WriteLine($"{fileName}({lineNumber}): warning {msgcode}: Hits: {line.Hits}{condition}");
+                        }
                     }
-                    Out.WriteLine($"{fileName}({line.LineNumber}): warning {msgcode}: Hits: {line.Hits}{condition}");
                 }
             }
         }
@@ -213,6 +214,13 @@ namespace Mawosoft.MissingCoverage
             string copyright = ((copyrights.Length == 1 ? copyrights[0] : null)
                                 as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
             return (name, version, copyright);
+        }
+
+        internal static void WriteToolError(string msgcode, string message)
+        {
+            (string name, _, _) = GetAppInfo();
+            if (string.IsNullOrEmpty(msgcode)) msgcode = "MC9000";
+            Out.WriteLine($"{name} : error {msgcode}: {message}");
         }
 
         internal static void WriteAppTitle()
@@ -232,7 +240,7 @@ Options:
   -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
   -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
   -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
-  -lo|--latest-only                    For each subsequent filespec, uses only the newest of all matching files.
+  -lo|--latest-only                    For each source file, uses only the data from the newest of all matching report files.
   --                                   Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
 
 Filespecs:
