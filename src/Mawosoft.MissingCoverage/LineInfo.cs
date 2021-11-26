@@ -1,5 +1,8 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Mawosoft.MissingCoverage
 {
     internal struct LineInfo
@@ -12,13 +15,24 @@ namespace Mawosoft.MissingCoverage
         public int Hits
         {
             get => (int)(_hits & HitsMask);
-            set => _hits = (value < 0 ? 0 : (uint)value) | LineFlag;
+            set
+            {
+                if (value >= 0)
+                {
+                    _hits = (uint)value | LineFlag;
+                    return;
+                }
+                ThrowArgException(); // Ensure inlining /reduce inlining size
+                [DoesNotReturn]
+                static void ThrowArgException() => throw new ArgumentOutOfRangeException(nameof(Hits));
+            }
         }
         public ushort CoveredBranches;
         public ushort TotalBranches;
 
         public void Merge(LineInfo other)
         {
+            if (!other.IsLine) return;
             if (!IsLine)
             {
                 this = other;
@@ -34,12 +48,10 @@ namespace Mawosoft.MissingCoverage
             {
                 // This should rather not happen as it indicates that we merge reports from different
                 // source file versions.
-                double covered = TotalBranches <= 1
+                double covered = TotalBranches == 0
                                ? 0
                                : (double)CoveredBranches / TotalBranches;
-                double otherCovered = other.TotalBranches <= 1
-                                    ? 0
-                                    : (double)other.CoveredBranches / other.TotalBranches;
+                double otherCovered = (double)other.CoveredBranches / other.TotalBranches;
                 if (covered < otherCovered)
                 {
                     CoveredBranches = other.CoveredBranches;
@@ -47,5 +59,8 @@ namespace Mawosoft.MissingCoverage
                 }
             }
         }
+
+        public override string ToString()
+            => $"({(IsLine ? '+' : '-')}{Hits}, {CoveredBranches}/{TotalBranches})";
     }
 }
