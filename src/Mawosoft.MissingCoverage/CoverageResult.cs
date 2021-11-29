@@ -8,25 +8,28 @@ namespace Mawosoft.MissingCoverage
     internal class CoverageResult
     {
         public bool LatestOnly { get; }
-        public List<string> InputFilePaths { get; } = new();
+        public List<string> ReportFilePaths { get; } = new();
         public Dictionary<string, SourceFileInfo> SourceFiles { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-        public CoverageResult(bool latestOnly)
-        {
-            LatestOnly = latestOnly;
-        }
+        public CoverageResult() { }
 
-        public CoverageResult(string inputFilePath)
+        public CoverageResult(bool latestOnly) => LatestOnly = latestOnly;
+
+        public CoverageResult(string reportFilePath)
         {
-            if (!string.IsNullOrEmpty(inputFilePath))
+            if (string.IsNullOrWhiteSpace(reportFilePath))
             {
-                InputFilePaths.Add(inputFilePath);
+                throw new ArgumentException(null, nameof(reportFilePath));
             }
+            ReportFilePaths.Add(reportFilePath);
         }
 
         public void AddOrMergeSourceFile(SourceFileInfo sourceFile)
         {
-
+            if (sourceFile == null)
+            {
+                throw new ArgumentNullException(nameof(sourceFile));
+            }
             if (SourceFiles.TryGetValue(sourceFile.SourceFilePath, out SourceFileInfo? existing))
             {
                 if (LatestOnly)
@@ -49,7 +52,7 @@ namespace Mawosoft.MissingCoverage
 
         public void Merge(CoverageResult other)
         {
-            InputFilePaths.AddRange(other.InputFilePaths);
+            ReportFilePaths.AddRange(other.ReportFilePaths);
             foreach (SourceFileInfo fileInfo in other.SourceFiles.Values)
             {
                 AddOrMergeSourceFile(fileInfo);
