@@ -7,18 +7,45 @@ namespace Mawosoft.MissingCoverage
 {
     internal class SourceFileInfo
     {
-        public static int DefaultLineCount { get; set; } = 500;
-        public static int MaxLineNumber { get; set; } = 50_000;
-        public string SourceFilePath { get; set; }
+        private static int s_defaultLineCount = 500;
+        private static int s_maxLineNumber = 50_000;
+
+        public static int DefaultLineCount
+        {
+            get => s_defaultLineCount;
+            set => s_defaultLineCount = (value > 0)
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(DefaultLineCount));
+        }
+
+        public static int MaxLineNumber
+        {
+            get => s_maxLineNumber;
+            set => s_maxLineNumber = (value > 0)
+                ? value
+                : throw new ArgumentOutOfRangeException(nameof(MaxLineNumber));
+        }
+
+        private string _sourceFilePath;
+        private LineInfo[] _lines;
+
+        public string SourceFilePath
+        {
+            get => _sourceFilePath;
+            set => _sourceFilePath = !string.IsNullOrWhiteSpace(value)
+                ? value
+                : throw new ArgumentException(null, nameof(SourceFilePath));
+        }
+
         public DateTime ReportTimestamp { get; }
         public int LastLineNumber { get; private set; }
-
-        private LineInfo[] _lines;
-        public ref LineInfo this[int index] => ref _lines[index];
+        public ref readonly LineInfo Line(int index) => ref _lines[index];
 
         public SourceFileInfo(string sourceFilePath, DateTime reportTimestamp)
         {
-            SourceFilePath = sourceFilePath;
+            _sourceFilePath = !string.IsNullOrWhiteSpace(sourceFilePath)
+                            ? sourceFilePath
+                            : throw new ArgumentException(null, nameof(sourceFilePath));
             ReportTimestamp = reportTimestamp;
             LastLineNumber = 0;
             _lines = new LineInfo[DefaultLineCount];
@@ -26,7 +53,11 @@ namespace Mawosoft.MissingCoverage
 
         public void AddOrMergeLine(int lineNumber, LineInfo line)
         {
-            if (lineNumber <= LastLineNumber)
+            if (lineNumber <= 0)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            else if (lineNumber <= LastLineNumber)
             {
                 if (_lines[lineNumber].IsLine)
                 {
@@ -37,12 +68,12 @@ namespace Mawosoft.MissingCoverage
                     _lines[lineNumber] = line;
                 }
             }
-            else
+            else if (lineNumber > MaxLineNumber)
             {
-                if (lineNumber > MaxLineNumber)
-                {
-                    throw new IndexOutOfRangeException($"{nameof(lineNumber)} larger than {MaxLineNumber}.");
-                }
+                throw new IndexOutOfRangeException($"{nameof(lineNumber)} larger than {MaxLineNumber}.");
+            }
+            else if (line.IsLine)
+            {
                 LastLineNumber = lineNumber;
                 if (lineNumber >= _lines.Length)
                 {
@@ -54,6 +85,10 @@ namespace Mawosoft.MissingCoverage
 
         public void Merge(SourceFileInfo other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
             Debug.Assert(SourceFilePath == other.SourceFilePath, "SourceFilePath should be identical");
             if (other.LastLineNumber >= _lines.Length)
             {
@@ -75,5 +110,8 @@ namespace Mawosoft.MissingCoverage
             if (newCapacity < minCapacity) newCapacity = minCapacity;
             Array.Resize(ref _lines, newCapacity);
         }
+
+        public override string ToString()
+            => $"{SourceFilePath} ({LastLineNumber}) [{ReportTimestamp}]";
     }
 }
