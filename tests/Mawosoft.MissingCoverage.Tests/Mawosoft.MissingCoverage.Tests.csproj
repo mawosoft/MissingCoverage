@@ -3,6 +3,10 @@
   <PropertyGroup>
     <TargetFrameworks>net5.0</TargetFrameworks>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <UseDataCollector/>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />

@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,33 +24,51 @@ namespace Mawosoft.MissingCoverage.Tests
             public override void WriteLine(string? value) => _testOutput.WriteLine(value);
         }
 
-        private static string TestDataDirectory()
+        // TODO move GetTestDataDirectory elsewhere
+        // Get 'testdata' directory
+        internal static string GetTestDataDirectory()
         {
-            string path = Path.GetFullPath(Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                ?? Directory.GetCurrentDirectory(),
-                "../../../../testdata"));
-            if (!Path.EndsInDirectorySeparator(path)) path += '/';
-            return path;
+            static string WhereAmI([CallerFilePath] string callerFilePath = "") => callerFilePath;
+            const string relativeToMePath = "../testdata/";
+            string basePath = WhereAmI();
+            if (basePath.StartsWith("/_", StringComparison.Ordinal))
+            {
+                // Resolve deterministic paths for GitHub (with local fallback)
+                int pos = basePath.IndexOf('/', 1);
+                if (pos >= 0) pos++; // Substring will throw if pos < 0
+                basePath = Path.GetDirectoryName(basePath.Substring(pos)) ?? string.Empty;
+                string repoPath = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")
+                                  ?? @"C:/Users/mw/Projects/MissingCoverage";
+                basePath = Path.Combine(repoPath, basePath);
+            }
+            else
+            {
+                basePath = Path.GetDirectoryName(basePath) ?? string.Empty;
+            }
+            string path = Path.GetFullPath(Path.Combine(basePath, relativeToMePath));
+            if (!Path.EndsInDirectorySeparator(path)) path += Path.DirectorySeparatorChar;
+            return Directory.Exists(path)
+                ? path
+                : throw new DirectoryNotFoundException("Could not locate 'testdata' directory.");
         }
 
         // TODO Add proper tests.
         // This is just for coverage and manual validation.
-        [Theory]
-        [InlineData("-h")]
-        [InlineData(null)]
-        [InlineData("-ht", "0", "{testdata}*")]
-        [InlineData("-ht", "0", "-bt", "4", "{testdata}*")]
-        [InlineData("{testdata}coverlet big.xml")]
+        [Theory(Skip = "Replace with proper tests")]
+        //[InlineData("-h")]
+        //[InlineData(null)]
+        //[InlineData("-ht", "0", "{testdata}*")]
+        //[InlineData("-ht", "0", "-bt", "4", "{testdata}*")]
+        //[InlineData("{testdata}coverlet big.xml")]
         [InlineData("{testdata}coverlet small.xml")]
-        [InlineData("{testdata}fcc merged.xml")]
-        [InlineData("{testdata}coverlet*.xml")]
-        [InlineData("-lo", "{testdata}*")]
+        //[InlineData("{testdata}fcc merged.xml")]
+        //[InlineData("{testdata}coverlet*.xml")]
+        //[InlineData("-lo", "{testdata}*")]
         public void Run_CmdlineArguments(params string[]? args)
         {
             if (args != null)
             {
-                string path = TestDataDirectory();
+                string path = GetTestDataDirectory();
                 for (int i = 0; i < args.Length; i++)
                 {
                     args[i] = args[i].Replace("{testdata}", path, StringComparison.Ordinal);

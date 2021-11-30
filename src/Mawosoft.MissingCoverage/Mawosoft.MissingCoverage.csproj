@@ -1,17 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Choose>
+    <When Condition="'$(GITHUB_ACTIONS)' == 'true'">
+      <PropertyGroup>
+        <TargetFrameworks>net6.0;net5.0</TargetFrameworks>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <Deterministic>true</Deterministic>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <TargetFrameworks>net5.0</TargetFrameworks>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
   <PropertyGroup>
-    <TargetFrameworks>net5.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>MissingCoverage</AssemblyName>
-    <RootNamespace>Mawosoft.MissingCoverage</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>External Tool for Visual Studio</Description>
     <PackageId>Mawosoft.MissingCoverage</PackageId>
+    <PackageType>DotnetTool</PackageType>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>MissingCoverage</ToolCommandName>
     <PackageDescription>Easily navigate to the blind spots of your unit testing in Visual Studio.</PackageDescription>
     <PackageTags>code-coverage;visual-studio;unit-testing</PackageTags>
     <PackageIcon>packageIcon.png</PackageIcon>
@@ -24,12 +41,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <!-- TODO ReadMe; more/better tags; props for dotnet tool? -->
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <Deterministic>true</Deterministic>
+    <!-- TODO ReadMe; more/better tags -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="$(RootNamespace).Tests" />
+    <InternalsVisibleTo Include="$(AssemblyName).Tests" />
   </ItemGroup>
 
   <ItemGroup>
