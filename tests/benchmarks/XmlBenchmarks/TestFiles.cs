@@ -134,10 +134,7 @@ namespace XmlBenchmarks
             }
             else
             {
-                DirectoryPath = Path.GetFullPath(Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                    ?? Directory.GetCurrentDirectory(),
-                    "../../../../../testdata"));
+                DirectoryPath = GetTestDataDirectory();
             }
             if (!Directory.Exists(DirectoryPath))
             {
@@ -167,6 +164,33 @@ namespace XmlBenchmarks
                         break;
                 }
             }
+        }
+
+        // Get 'testdata' directory
+        private static string GetTestDataDirectory()
+        {
+            static string WhereAmI([CallerFilePath] string callerFilePath = "") => callerFilePath;
+            const string relativeToMePath = "../../testdata/";
+            string basePath = WhereAmI();
+            if (basePath.StartsWith("/_", StringComparison.Ordinal))
+            {
+                // Resolve deterministic paths for GitHub (with local fallback)
+                int pos = basePath.IndexOf('/', 1);
+                if (pos >= 0) pos++; // Substring will throw if pos < 0
+                basePath = Path.GetDirectoryName(basePath.Substring(pos)) ?? string.Empty;
+                string repoPath = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")
+                                  ?? @"C:/Users/mw/Projects/MissingCoverage";
+                basePath = Path.Combine(repoPath, basePath);
+            }
+            else
+            {
+                basePath = Path.GetDirectoryName(basePath) ?? string.Empty;
+            }
+            string path = Path.GetFullPath(Path.Combine(basePath, relativeToMePath));
+            if (!Path.EndsInDirectorySeparator(path)) path += Path.DirectorySeparatorChar;
+            return Directory.Exists(path)
+                ? path
+                : throw new DirectoryNotFoundException("Could not locate 'testdata' directory.");
         }
 
         public static void Cleanup()
