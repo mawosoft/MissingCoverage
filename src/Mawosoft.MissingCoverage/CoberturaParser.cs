@@ -4,20 +4,25 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace Mawosoft.MissingCoverage
 {
-    /// <summary>Cobertura report parser</summary>
     // There is currently no benefit in maintaining a state here between ctor and Parse().
     internal static class CoberturaParser
     {
-        /// <summary>
-        /// Parses a Cobertura report file and returns a new <see cref="CoverageResult"/>.
-        /// </summary>
-        public static CoverageResult Parse(string reportFilePath)
+
+        private static readonly Regex s_regexDeterministic = new(
+            @"^/_\d?/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        public static CoverageResult Parse(string reportFilePath, Func<string, IReadOnlyList<string>, string>? filePathResolver)
         {
-            DateTime reportTimestamp = File.GetLastWriteTime(reportFilePath);
+            if (filePathResolver == null)
+            {
+                filePathResolver = ResolveFilePath;
+            }
+            DateTime reportTimestamp = File.GetLastWriteTimeUtc(reportFilePath);
             // TODO Benchmark async vs sync single file and multi/parallel
             // None of the ReadToXxx functions support async processing, plus there is extra overhead
             // in the internal async implementation. Since a single report file seems the most common
@@ -50,7 +55,7 @@ namespace Mawosoft.MissingCoverage
                     // Note ReadElementContentAsXxx reads the content of the current element and moves past it.
                     // Hence we can't use ReadToNextSibling() because we probably are already on the next sibling.
                     string sourcedir = reader.ReadElementContentAsString();
-                    if (sourcedir.Length == 2 && sourcedir[1] == ':' && Path.VolumeSeparatorChar == ':')
+                    if (sourcedir.EndsWith(':'))
                     {
                         sourcedir += Path.DirectorySeparatorChar;
                     }
@@ -68,6 +73,7 @@ namespace Mawosoft.MissingCoverage
             // to appear again.
             Dictionary<string, SourceFileInfo> sourceFiles = new(StringComparer.OrdinalIgnoreCase);
             SourceFileInfo? sourceFileInfo = null;
+            string? sourceFileNameAsIs = null;
             while (reader.ReadToFollowing("class"))
             {
                 string fileName = reader.GetAttribute("filename") ?? string.Empty;
@@ -75,19 +81,15 @@ namespace Mawosoft.MissingCoverage
                 {
                     ThrowInvalidOrMissingAttribute(reader, "filename");
                 }
-                if (sourceFileInfo == null
-                    || !fileName.Equals(sourceFileInfo.SourceFilePath, StringComparison.OrdinalIgnoreCase))
+                // Do a quick check against last processed file name.
+                if (sourceFileInfo == null || !fileName.Equals(sourceFileNameAsIs, StringComparison.Ordinal))
                 {
+                    sourceFileNameAsIs = fileName;
                     fileName = NormalizePathSeparators(fileName);
-                    if (sourceFileInfo == null
-                        || !fileName.Equals(sourceFileInfo.SourceFilePath, StringComparison.OrdinalIgnoreCase)
-)
+                    if (!sourceFiles.TryGetValue(fileName, out sourceFileInfo))
                     {
-                        if (!sourceFiles.TryGetValue(fileName, out sourceFileInfo))
-                        {
-                            sourceFileInfo = new(fileName, reportTimestamp);
-                            sourceFiles[fileName] = sourceFileInfo;
-                        }
+                        sourceFileInfo = new(fileName, reportTimestamp);
+                        sourceFiles[fileName] = sourceFileInfo;
                     }
                 }
                 // Skip over "class/methods/method/lines" directly to "class/lines".
@@ -145,7 +147,7 @@ namespace Mawosoft.MissingCoverage
             CoverageResult result = new(reportFilePath);
             foreach (SourceFileInfo fileInfo in sourceFiles.Values)
             {
-                fileInfo.SourceFilePath = ResolveFilePath(fileInfo.SourceFilePath, sourceDirectories);
+                fileInfo.SourceFilePath = filePathResolver(fileInfo.SourceFilePath, sourceDirectories);
                 result.AddOrMergeSourceFile(fileInfo);
             }
             return result;
@@ -173,15 +175,12 @@ namespace Mawosoft.MissingCoverage
 
         private static string NormalizePathSeparators(string path)
         {
-            if (path.Length >= 7 && path.StartsWith("http", StringComparison.Ordinal))
+            // TODO Other path types like UNC?
+            if (path.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
+                || (path.StartsWith("/_", StringComparison.Ordinal) && s_regexDeterministic.IsMatch(path)))
             {
-                // exclude http(s)://
-                int index = 4;
-                if (path[index] == 's') index++;
-                if (path.Length > (index + 2) && path[index + 1] == '/' && path[index + 2] == '/')
-                {
-                    return path;
-                }
+                return path;
             }
             char replace = Path.DirectorySeparatorChar == '/' ? '\\' : '/';
             return path.Replace(replace, Path.DirectorySeparatorChar);
