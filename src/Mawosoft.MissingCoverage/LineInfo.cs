@@ -52,7 +52,8 @@ namespace Mawosoft.MissingCoverage
                                ? 0
                                : (double)CoveredBranches / TotalBranches;
                 double otherCovered = (double)other.CoveredBranches / other.TotalBranches;
-                if (covered < otherCovered)
+                if (covered < otherCovered
+                    || (covered == otherCovered && CoveredBranches < other.CoveredBranches))
                 {
                     CoveredBranches = other.CoveredBranches;
                     TotalBranches = other.TotalBranches;

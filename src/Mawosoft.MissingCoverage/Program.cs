@@ -57,16 +57,6 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        // TODO allow arguments via settings file (project/solution specific)
-        // TODO add options nologo, verbosity, singleline (instead of combined for same, better name nosequence/nocollapse?)
-        // TODO maybe check for colon as separator --option:value used instead of --option value
-        //      dotnet supports that, but disallows space after colon, e.g. --option: value is invalid
-        //      dotnet also supports /option:value, but fails to recognize paths that start with '/'.
-        //      dotnet also allows - and -- to be used with both short and long options, but allowed combos
-        //      are somewhat peculiar.
-        //      works: -v:d -verbosity:d
-        //      fails: --v:d -verbosity d
-
         internal void ParseArguments(string[] args)
         {
             Matcher? matcher = null;
@@ -153,9 +143,12 @@ namespace Mawosoft.MissingCoverage
             MergedResult = new(LatestOnly);
             foreach (string inputFile in InputFilePaths)
             {
+                CoberturaParser? parser = null;
                 try
                 {
-                    CoverageResult result = CoberturaParser.Parse(inputFile, null);
+                    parser = new(inputFile);
+                    CoverageResult result = parser.Parse();
+                    parser.Dispose();
                     MergedResult.Merge(result);
                     Out.WriteLine(inputFile);
                 }
@@ -171,6 +164,7 @@ namespace Mawosoft.MissingCoverage
                     }
                     Out.WriteLine($"{inputFile}({lineNumber},{linePosition}): error {msgcode}: {ex.Message}");
                     MergedResult = null;
+                    parser?.Dispose();
                     break;
                 }
             }
@@ -178,13 +172,6 @@ namespace Mawosoft.MissingCoverage
 
         // For navigable message format see:
         // https://docs.microsoft.com/en-us/cpp/build/formatting-the-output-of-a-custom-build-step-or-build-event?view=msvc-160
-        // Documented line number format: (line1,col1) or (line1).
-        // Sometimes used by VStudio itself: format (line1,col1,line2,col2). line1 is minimum requirement.
-        // Selection *always* only jumps to beginning (line1,1 or line1,col1). There is no range selection
-        // even if line2,col2 are there.
-        // - Any number of values after line1 can be omitted, but gaps are not allowed.
-        // - Actually (line1-line2) works as well, probably because '-' is treated as separator
-        // TODO combine lines if result is the same
         internal void WriteResults()
         {
             if (MergedResult == null)

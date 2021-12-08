@@ -37,7 +37,7 @@ namespace Mawosoft.MissingCoverage
                 : throw new ArgumentException(null, nameof(SourceFilePath));
         }
 
-        public DateTime ReportTimestamp { get; }
+        public DateTime ReportTimestamp { get; internal set; }
         public int LastLineNumber { get; private set; }
         public ref readonly LineInfo Line(int index) => ref _lines[index];
 
