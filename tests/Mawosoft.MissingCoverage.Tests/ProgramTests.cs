@@ -24,34 +24,6 @@ namespace Mawosoft.MissingCoverage.Tests
             public override void WriteLine(string? value) => _testOutput.WriteLine(value);
         }
 
-        // TODO move GetTestDataDirectory elsewhere
-        // Get 'testdata' directory
-        internal static string GetTestDataDirectory()
-        {
-            static string WhereAmI([CallerFilePath] string callerFilePath = "") => callerFilePath;
-            const string relativeToMePath = "../testdata/";
-            string basePath = WhereAmI();
-            if (basePath.StartsWith("/_", StringComparison.Ordinal))
-            {
-                // Resolve deterministic paths for GitHub (with local fallback)
-                int pos = basePath.IndexOf('/', 1);
-                if (pos >= 0) pos++; // Substring will throw if pos < 0
-                basePath = Path.GetDirectoryName(basePath.Substring(pos)) ?? string.Empty;
-                string repoPath = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE")
-                                  ?? @"C:/Users/mw/Projects/MissingCoverage";
-                basePath = Path.Combine(repoPath, basePath);
-            }
-            else
-            {
-                basePath = Path.GetDirectoryName(basePath) ?? string.Empty;
-            }
-            string path = Path.GetFullPath(Path.Combine(basePath, relativeToMePath));
-            if (!Path.EndsInDirectorySeparator(path)) path += Path.DirectorySeparatorChar;
-            return Directory.Exists(path)
-                ? path
-                : throw new DirectoryNotFoundException("Could not locate 'testdata' directory.");
-        }
-
         // TODO Add proper tests.
         // This is just for coverage and manual validation.
         [Theory(Skip = "Replace with proper tests")]
@@ -68,7 +40,7 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             if (args != null)
             {
-                string path = GetTestDataDirectory();
+                string path = TestFiles.GetTestDataDirectory();
                 for (int i = 0; i < args.Length; i++)
                 {
                     args[i] = args[i].Replace("{testdata}", path, StringComparison.Ordinal);

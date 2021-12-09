@@ -60,6 +60,10 @@ namespace Mawosoft.MissingCoverage
 
         internal CoberturaParser(string reportFilePath, XmlReaderSettings xmlReaderSettings)
         {
+            if (string.IsNullOrWhiteSpace(reportFilePath))
+            {
+                throw new ArgumentException(null, nameof(reportFilePath));
+            }
             ReportFilePath = reportFilePath;
             ReportTimestamp = File.GetLastWriteTimeUtc(ReportFilePath);
             _xmlReader = XmlReader.Create(ReportFilePath, xmlReaderSettings);
