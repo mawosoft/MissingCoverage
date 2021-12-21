@@ -23,14 +23,13 @@ namespace Mawosoft.MissingCoverage.Tests
             Assert.NotNull(report.FirstInvalidElement);
             Assert.NotNull(report.ReportFilePath);
             Assert.Contains(messageContains, exception.Message, StringComparison.OrdinalIgnoreCase);
-            ReadOnlySpan<char> fileLine = File.ReadAllLines(report.ReportFilePath!)[exception.LineNumber - 1];
-            int pos = exception.LinePosition;
-            while (fileLine.Length > 0 && char.IsWhiteSpace(fileLine[0]))
+            string fileLine;
+            using (StreamReader reader = new(report.ReportFilePath!))
             {
-                fileLine = fileLine.Slice(1);
-                pos--;
+                for (int i = 1; i < exception.LineNumber && reader.ReadLine() != null; i++) { /* do nothing */ }
+                fileLine = (reader.ReadLine() ?? string.Empty).TrimEnd();
             }
-            fileLine = fileLine.TrimEnd();
+            int pos = exception.LinePosition - fileLine.Length + (fileLine = fileLine.TrimStart()).Length;
             string[] elementLines = report.FirstInvalidElement!
                 .ToString()
                 .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.TrimEntries);
@@ -47,7 +46,7 @@ namespace Mawosoft.MissingCoverage.Tests
                 expectedPos = 2;
             }
 
-            Assert.Equal(elementLine, fileLine.ToString());
+            Assert.Equal(elementLine, fileLine);
             Assert.Equal(expectedPos, pos);
         }
 
@@ -395,7 +394,7 @@ namespace Mawosoft.MissingCoverage.Tests
             for (int i = 0; i < numberOfSources; i++)
             {
                 string sourcedir = $"sourcedir{i}";
-                report.AddSources((Path.Combine(tempDirectory.FullPath, sourcedir), normalize : true));
+                report.AddSources((Path.Combine(tempDirectory.FullPath, sourcedir), normalize: true));
                 for (int k = 0; k < 2; k++)
                 {
                     fileName = Path.Combine("project", $"file{fileId++}.cs");
