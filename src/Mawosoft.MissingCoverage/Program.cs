@@ -14,11 +14,7 @@ namespace Mawosoft.MissingCoverage
     {
         public static TextWriter Out { get; set; } = Console.Out;
         public static TextWriter Error { get; set; } = Console.Error;
-        public int HitThreshold { get; set; } = 1;
-        public int CoverageThreshold { get; set; } = 100;
-        public int BranchThreshold { get; set; } = 2;
-        public bool LatestOnly { get; set; }
-        public bool ShowHelpOnly { get; set; }
+        public Options Options { get; set; } = new();
         public HashSet<string> InputFilePaths { get; } = new(StringComparer.OrdinalIgnoreCase);
         public CoverageResult? MergedResult { get; private set; }
 
@@ -30,24 +26,26 @@ namespace Mawosoft.MissingCoverage
 
         internal void Run(string[] args)
         {
-            WriteAppTitle();
             try
             {
                 ParseArguments(args);
             }
             catch (Exception ex)
             {
+                WriteAppTitle();
                 WriteToolError("", ex.Message);
                 WriteHelpText();
                 return;
             }
-            if (ShowHelpOnly)
+            if (Options.ShowHelpOnly)
             {
+                WriteAppTitle();
                 WriteHelpText();
                 return;
             }
             try
             {
+                WriteAppTitle();
                 ProcessInputFiles();
                 WriteResults();
             }
@@ -57,63 +55,26 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
+        // TODO implement newly added Options here: NoLogo, Verbosity, NoCollapse, MaxLineNumber
         internal void ParseArguments(string[] args)
         {
             Matcher? matcher = null;
             string lastRoot = string.Empty;
-            bool canHaveOptions = true;
-            bool hasFileSpec = false;
-            for (int i = 0; i < args.Length; i++)
+            Options.ParseCommandLineArguments(args);
+            if (Options.GlobPatterns.Count == 0)
             {
-                string arg = args[i];
-                if (canHaveOptions && arg.StartsWith('-'))
-                {
-                    string? nextArg = (i + 1) < args.Length ? args[i + 1] : null;
-                    switch (arg.ToLowerInvariant())
-                    {
-                        case "--":
-                            canHaveOptions = false;
-                            break;
-                        case "-h" or "--help":
-                            ShowHelpOnly = true;
-                            return; // Ignore remaining args
-                        case "-lo" or "--latest-only":
-                            LatestOnly = true;
-                            break;
-                        case "-ht" or "--hit-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
-                            HitThreshold = result;
-                            i++;
-                            break;
-                        case "-ct" or "--coverage-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
-                            CoverageThreshold = result;
-                            i++;
-                            break;
-                        case "-bt" or "--branch-threshold" when int.TryParse(nextArg, out int result) && result >= 0:
-                            BranchThreshold = result;
-                            i++;
-                            break;
-                        default:
-                            throw new ArgumentException($"Invalid command line argument: {arg}");
-                    }
-
-                }
-                else
-                {
-                    hasFileSpec = true;
-                    string root = Path.GetPathRoot(arg) ?? string.Empty;
-                    if (root != lastRoot)
-                    {
-                        ExecuteMatcher();
-                        lastRoot = root;
-                    }
-                    matcher ??= new();
-                    matcher.AddInclude(root.Length == 0 ? arg : Path.GetRelativePath(root, arg));
-                }
+                Options.GlobPatterns.Add(@"**\*cobertura*.xml");
             }
-            if (!hasFileSpec)
+            foreach (string arg in Options.GlobPatterns)
             {
+                string root = Path.GetPathRoot(arg) ?? string.Empty;
+                if (root != lastRoot)
+                {
+                    ExecuteMatcher();
+                    lastRoot = root;
+                }
                 matcher ??= new();
-                matcher.AddInclude(@"**\*cobertura*.xml");
+                matcher.AddInclude(root.Length == 0 ? arg : Path.GetRelativePath(root, arg));
             }
             ExecuteMatcher(); // Handle any remains
             if (InputFilePaths.Count == 0)
@@ -140,7 +101,7 @@ namespace Mawosoft.MissingCoverage
         internal void ProcessInputFiles()
         {
             Out.WriteLine("Input files:");
-            MergedResult = new(LatestOnly);
+            MergedResult = new(Options.LatestOnly);
             foreach (string inputFile in InputFilePaths)
             {
                 CoberturaParser? parser = null;
@@ -192,7 +153,9 @@ namespace Mawosoft.MissingCoverage
                         {
                             percent = (int)Math.Round((double)line.CoveredBranches / line.TotalBranches * 100);
                         }
-                        if (line.Hits < HitThreshold || (line.TotalBranches >= BranchThreshold && percent < CoverageThreshold))
+                        if (line.Hits < Options.HitThreshold
+                            || (line.TotalBranches >= Options.BranchThreshold
+                                && percent < Options.CoverageThreshold))
                         {
                             string msgcode = line.TotalBranches > 0 ? "MC0001" : "MC0002";
                             string condition = string.Empty;
@@ -228,10 +191,13 @@ namespace Mawosoft.MissingCoverage
             Out.WriteLine($"{name} : error {msgcode}: {message}");
         }
 
-        internal static void WriteAppTitle()
+        internal void WriteAppTitle()
         {
-            (string name, string version, string copyright) = GetAppInfo();
-            Out.WriteLine($"{name} {version} {copyright}");
+            if (!Options.NoLogo)
+            {
+                (string name, string version, string copyright) = GetAppInfo();
+                Out.WriteLine($"{name} {version} {copyright}");
+            }
         }
 
         internal static void WriteHelpText()
