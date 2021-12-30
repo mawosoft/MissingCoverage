@@ -83,5 +83,64 @@ namespace Mawosoft.MissingCoverage.Tests
             target.Merge(other);
             Assert.Equal(expected, target);
         }
+
+        private class Equals_TheoryData : TheoryData<object?, object?, bool>
+        {
+            public Equals_TheoryData()
+            {
+                LineInfo left = default;
+                LineInfo right = default;
+                Add(left, right, true);
+                Add(left, null, false);
+                Add(left, 0UL, false);
+                left.Hits = 0;
+                Add(left, right, false);
+                right.Hits = 0;
+                Add(left, right, true);
+                left.Hits = 42;
+                Add(left, right, false);
+                right.Hits = 42;
+                Add(left, right, true);
+                left.TotalBranches = 4;
+                Add(left, right, false);
+                right.TotalBranches = 4;
+                Add(left, right, true);
+                left.CoveredBranches = 2;
+                Add(left, right, false);
+                right.CoveredBranches = 2;
+                Add(left, right, true);
+            }
+        }
+
+        [Theory]
+        [ClassData(typeof(Equals_TheoryData))]
+        public void Equals_Succeeds(object? left, object? right, bool expected)
+        {
+            if (left != null)
+            {
+                Assert.True(left.Equals(left));
+                Assert.Equal(expected, left.Equals(right));
+                Assert.Equal(expected, left.GetHashCode().Equals(right?.GetHashCode()));
+            }
+            if (right != null)
+            {
+                Assert.True(right.Equals(right));
+                Assert.Equal(expected, right.Equals(left));
+                Assert.Equal(expected, right.GetHashCode().Equals(left?.GetHashCode()));
+            }
+            if (left is LineInfo leftLine)
+            {
+                Assert.True(leftLine.Equals(leftLine));
+                Assert.Equal(expected, leftLine.Equals(right));
+                Assert.Equal(expected, leftLine.GetHashCode().Equals(right?.GetHashCode()));
+                if (right is LineInfo rightLine)
+                {
+                    Assert.True(rightLine.Equals(rightLine));
+                    Assert.Equal(expected, leftLine.Equals(rightLine));
+                    Assert.Equal(expected, rightLine.Equals(leftLine));
+                    Assert.Equal(expected, leftLine.GetHashCode().Equals(rightLine.GetHashCode()));
+                }
+            }
+        }
     }
 }

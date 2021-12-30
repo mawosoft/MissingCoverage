@@ -2,14 +2,14 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal struct LineInfo
+    internal struct LineInfo : IEquatable<LineInfo>
     {
         private const uint HitsMask = int.MaxValue;
         private const uint LineFlag = ~HitsMask;
-
         private uint _hits;
         public bool IsLine => (_hits & LineFlag) != 0;
         public int Hits
@@ -29,6 +29,7 @@ namespace Mawosoft.MissingCoverage
         }
         public ushort CoveredBranches;
         public ushort TotalBranches;
+        // [FieldOffset(0)] private ulong _fastEquals;
 
         public void Merge(LineInfo other)
         {
@@ -62,6 +63,18 @@ namespace Mawosoft.MissingCoverage
         }
 
         public override string ToString()
-            => $"({(IsLine ? '+' : '-')}{Hits}, {CoveredBranches}/{TotalBranches})";
+            => Hits.ToString() + (IsLine ? string.Empty : "?")
+               + (CoveredBranches != 0 || TotalBranches != 0
+                  ? $" ({CoveredBranches}/{TotalBranches})"
+                  : string.Empty);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(LineInfo other)
+            => _hits == other._hits
+               && TotalBranches == other.TotalBranches
+               && CoveredBranches == other.CoveredBranches;
+
+        public override bool Equals([NotNullWhen(true)] object? obj) => obj is LineInfo line && Equals(line);
+        public override int GetHashCode() => HashCode.Combine(_hits, CoveredBranches, TotalBranches);
     }
 }
