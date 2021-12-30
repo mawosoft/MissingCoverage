@@ -622,7 +622,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData("fcc merged.xml")]
         public void Parse_WithTestFiles_Succeeds(string reportName)
         {
-            string reportFilePath = Path.Combine(TestFiles.GetTestDataDirectory(), reportName);
+            string reportFilePath = Path.Combine(TestDataDirectory.GetTestDataDirectory(), reportName);
             (CoverageResult expected, List<string> sourceDirectories) = SimpleCoberturaParser(reportFilePath);
             using CoberturaParser parser = new(reportFilePath) { FilePathResolver = LeaveFilePathAsIs };
             CoverageResult result = parser.Parse();
@@ -635,7 +635,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData("fcc merged.xml")]
         public void Parse_WithTestFilesAndCustomXmlSettings_Succeeds(string reportName)
         {
-            string reportFilePath = Path.Combine(TestFiles.GetTestDataDirectory(), reportName);
+            string reportFilePath = Path.Combine(TestDataDirectory.GetTestDataDirectory(), reportName);
             (CoverageResult expected, List<string> sourceDirectories) = SimpleCoberturaParser(reportFilePath);
             XmlReaderSettings xmlReaderSettings = new()
             {
