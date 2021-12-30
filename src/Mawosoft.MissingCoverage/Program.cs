@@ -12,59 +12,92 @@ namespace Mawosoft.MissingCoverage
 {
     internal class Program
     {
-        public static TextWriter Out { get; set; } = Console.Out;
-        public static TextWriter Error { get; set; } = Console.Error;
-        public Options Options { get; set; } = new();
-        public HashSet<string> InputFilePaths { get; } = new(StringComparer.OrdinalIgnoreCase);
-        public CoverageResult? MergedResult { get; private set; }
+        public static string Name => nameof(MissingCoverage);
+        public static string Version { get; } = (Attribute.GetCustomAttribute(typeof(Program).Assembly, typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute)?.InformationalVersion?.Split('+')[0] ?? string.Empty;
+        public static string Copyright { get; } = (Attribute.GetCustomAttribute(typeof(Program).Assembly, typeof(AssemblyCopyrightAttribute)) as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
 
-        internal static void Main(string[] args)
+        [Flags]
+        private enum TitlesWritten
+        {
+            None = 0,
+            AppTitle = 1,
+            InputTitle = 2,
+            ResultTitle = 4,
+        }
+
+        private TitlesWritten _titlesWritten;
+        private int _exitCode;
+
+        public TextWriter Out { get; set; } = Console.Out;
+        public TextWriter Error { get; set; } = Console.Error;
+        public Options Options { get; set; } = new();
+
+        public static int Main(string[] args)
         {
             Program program = new();
-            program.Run(args);
+            return program.Run(args);
         }
 
-        internal void Run(string[] args)
+        public int Run(string[] args)
         {
+            _titlesWritten = TitlesWritten.None;
+            _exitCode = 0;
             try
             {
-                ParseArguments(args);
+                Configure(args);
+                if (Options.ShowHelpOnly)
+                {
+                    WriteHelpText();
+                }
+                else
+                {
+                    IEnumerable<string> inputFilePaths = GetInputFiles();
+                    CoverageResult mergedResult = ProcessInputFiles(inputFilePaths);
+                    WriteResults(mergedResult);
+                }
             }
             catch (Exception ex)
             {
-                WriteAppTitle();
-                WriteToolError("", ex.Message);
-                WriteHelpText();
-                return;
+                WriteToolError(ex);
             }
-            if (Options.ShowHelpOnly)
-            {
-                WriteAppTitle();
-                WriteHelpText();
-                return;
-            }
+            return _exitCode;
+        }
+
+        internal void Configure(string[] args)
+        {
             try
             {
-                WriteAppTitle();
-                ProcessInputFiles();
-                WriteResults();
+                Options.ParseCommandLineArguments(args);
             }
             catch (Exception ex)
             {
-                WriteToolError("", ex.Message);
+                Options.ShowHelpOnly = true;
+                WriteToolError(ex);
+                return;
             }
-        }
-
-        // TODO implement newly added Options here: NoLogo, Verbosity, NoCollapse, MaxLineNumber
-        internal void ParseArguments(string[] args)
-        {
-            Matcher? matcher = null;
-            string lastRoot = string.Empty;
-            Options.ParseCommandLineArguments(args);
+            // TODO process other Options sources like settings file.
             if (Options.GlobPatterns.Count == 0)
             {
-                Options.GlobPatterns.Add(@"**\*cobertura*.xml");
+                Options.GlobPatterns.Add(Path.Combine("**", "*cobertura*.xml"));
             }
+            if (Options.MaxLineNumber.IsSet)
+            {
+                SourceFileInfo.MaxLineNumber = Options.MaxLineNumber;
+            }
+
+        }
+
+        internal IEnumerable<string> GetInputFiles()
+        {
+            if (_exitCode != 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            List<string> inputFilePaths = new();
+            HashSet<string> uniqueInputs = new();
+            Matcher? matcher = null;
+            string lastRoot = string.Empty;
             foreach (string arg in Options.GlobPatterns)
             {
                 string root = Path.GetPathRoot(arg) ?? string.Empty;
@@ -77,10 +110,13 @@ namespace Mawosoft.MissingCoverage
                 matcher.AddInclude(root.Length == 0 ? arg : Path.GetRelativePath(root, arg));
             }
             ExecuteMatcher(); // Handle any remains
-            if (InputFilePaths.Count == 0)
+            if (inputFilePaths.Count == 0)
             {
+                WriteAppTitle();
+                WriteLineDetailed("Working directory: " + Directory.GetCurrentDirectory());
                 throw new InvalidOperationException("No matching input files.");
             }
+            return inputFilePaths;
 
             void ExecuteMatcher()
             {
@@ -90,19 +126,26 @@ namespace Mawosoft.MissingCoverage
                     PatternMatchingResult result = matcher.Execute(new DirectoryInfoWrapper(dirInfo));
                     foreach (FilePatternMatch file in result.Files)
                     {
-                        // Hashset will exclude dupes but may not preserve order.
-                        InputFilePaths.Add(Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path)));
+                        string fullPath = Path.GetFullPath(Path.Combine(dirInfo.FullName, file.Path));
+                        if (uniqueInputs.Add(fullPath))
+                        {
+                            inputFilePaths.Add(fullPath);
+                        }
                     }
                     matcher = null;
                 }
             }
         }
 
-        internal void ProcessInputFiles()
+        internal CoverageResult ProcessInputFiles(IEnumerable<string> inputFilePaths)
         {
-            Out.WriteLine("Input files:");
-            MergedResult = new(Options.LatestOnly);
-            foreach (string inputFile in InputFilePaths)
+            CoverageResult mergedResult = new(Options.LatestOnly);
+            if (_exitCode != 0)
+            {
+                return mergedResult;
+            }
+
+            foreach (string inputFile in inputFilePaths)
             {
                 CoberturaParser? parser = null;
                 try
@@ -110,116 +153,191 @@ namespace Mawosoft.MissingCoverage
                     parser = new(inputFile);
                     CoverageResult result = parser.Parse();
                     parser.Dispose();
-                    MergedResult.Merge(result);
-                    Out.WriteLine(inputFile);
+                    mergedResult.Merge(result);
+                    WriteInputTitle();
+                    WriteLineNormal(inputFile);
                 }
                 catch (Exception ex)
                 {
-                    int lineNumber = 0, linePosition = 0;
-                    string msgcode = "MC9002";
-                    if (ex is XmlException xex)
-                    {
-                        lineNumber = xex.LineNumber;
-                        linePosition = xex.LinePosition;
-                        msgcode = "MC9001";
-                    }
-                    Out.WriteLine($"{inputFile}({lineNumber},{linePosition}): error {msgcode}: {ex.Message}");
-                    MergedResult = null;
+                    WriteInputTitle();
+                    WriteFileError(inputFile, ex);
                     parser?.Dispose();
+                    mergedResult = new(Options.LatestOnly);
                     break;
                 }
+            }
+            return mergedResult;
+        }
+
+        internal void WriteResults(CoverageResult mergedResult)
+        {
+            if (_exitCode != 0)
+            {
+                return;
+            }
+
+            List<SourceFileInfo> sourceFiles = new(mergedResult.SourceFiles.Values);
+            sourceFiles.Sort((x, y) => string.Compare(x.SourceFilePath, y.SourceFilePath));
+            if (Options.CoverageThreshold < 100)
+            {
+                foreach (SourceFileInfo sourceFile in sourceFiles)
+                {
+                    foreach ((int firstLine, int lastLine) in sourceFile.LineSequences())
+                    {
+                        ref readonly LineInfo line = ref sourceFile.Line(firstLine);
+                        if (line.Hits < Options.HitThreshold
+                            || (line.TotalBranches >= Options.BranchThreshold
+                                && line.TotalBranches != 0
+                                && (int)Math.Round((double)line.CoveredBranches / line.TotalBranches * 100)
+                                    < Options.CoverageThreshold))
+                        {
+                            WriteResultLine(sourceFile.SourceFilePath, firstLine, lastLine, line);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (SourceFileInfo sourceFile in sourceFiles)
+                {
+                    foreach ((int firstLine, int lastLine) in sourceFile.LineSequences())
+                    {
+                        ref readonly LineInfo line = ref sourceFile.Line(firstLine);
+                        if (line.Hits < Options.HitThreshold
+                            || (line.CoveredBranches < line.TotalBranches
+                                && line.TotalBranches >= Options.BranchThreshold))
+                        {
+                            WriteResultLine(sourceFile.SourceFilePath, firstLine, lastLine, line);
+                        }
+                    }
+                }
+            }
+            if (!_titlesWritten.HasFlag(TitlesWritten.ResultTitle))
+            {
+                WriteResultTitle();
+                WriteLineDetailed("No missing coverage found.");
             }
         }
 
         // For navigable message format see:
         // https://docs.microsoft.com/en-us/cpp/build/formatting-the-output-of-a-custom-build-step-or-build-event?view=msvc-160
-        internal void WriteResults()
+        internal void WriteResultLine(string fileName, int firstLine, int lastLine, LineInfo line)
         {
-            if (MergedResult == null)
-                return;
-            Out.WriteLine("Results:");
-            List<SourceFileInfo> sourceFiles = new(MergedResult.SourceFiles.Values);
-            sourceFiles.Sort((x, y) => string.Compare(x.SourceFilePath, y.SourceFilePath));
-            foreach (SourceFileInfo sourceFile in sourceFiles)
+            WriteResultTitle();
+            string warning;
+            if (line.TotalBranches > 0)
             {
-                string fileName = sourceFile.SourceFilePath;
-                for (int lineNumber = 1; lineNumber <= sourceFile.LastLineNumber; lineNumber++)
+                int percent = (int)Math.Round((double)line.CoveredBranches / line.TotalBranches * 100);
+                warning = $"): warning MC0001: Hits: {line.Hits} Branches: {percent}% ({line.CoveredBranches}/{line.TotalBranches})";
+            }
+            else
+            {
+                warning = $"): warning MC0002: Hits: {line.Hits}";
+            }
+            fileName += '(';
+            if (Options.NoCollapse || firstLine == lastLine)
+            {
+                for (int i = firstLine; i <= lastLine; i++)
                 {
-                    ref readonly LineInfo line = ref sourceFile.Line(lineNumber);
-                    if (line.IsLine)
-                    {
-                        int percent = 0;
-                        if (line.TotalBranches > 0)
-                        {
-                            percent = (int)Math.Round((double)line.CoveredBranches / line.TotalBranches * 100);
-                        }
-                        if (line.Hits < Options.HitThreshold
-                            || (line.TotalBranches >= Options.BranchThreshold
-                                && percent < Options.CoverageThreshold))
-                        {
-                            string msgcode = line.TotalBranches > 0 ? "MC0001" : "MC0002";
-                            string condition = string.Empty;
-                            if (line.TotalBranches > 0)
-                            {
-                                condition = $" Condition coverage: {percent}% ({line.CoveredBranches}/{line.TotalBranches})";
-                            }
-                            Out.WriteLine($"{fileName}({lineNumber}): warning {msgcode}: Hits: {line.Hits}{condition}");
-                        }
-                    }
+                    Out.WriteLine(fileName + i.ToString() + warning);
                 }
+            }
+            else
+            {
+                Out.WriteLine(fileName + $"{firstLine}-{lastLine}" + warning);
             }
         }
 
-        internal static (string name, string version, string copyright) GetAppInfo()
+        internal void WriteLineDetailed(string line)
         {
-            Assembly asm = Assembly.GetExecutingAssembly();
-            AssemblyName asmName = asm.GetName();
-            string name = nameof(MissingCoverage);
-            string version = (Attribute.GetCustomAttribute(asm, typeof(AssemblyInformationalVersionAttribute))
-                as AssemblyInformationalVersionAttribute)?.InformationalVersion ?? string.Empty;
-            int pos = version.IndexOf('+');
-            if (pos >= 0) version = version.Substring(0, pos);
-            string copyright = (Attribute.GetCustomAttribute(asm, typeof(AssemblyCopyrightAttribute))
-                as AssemblyCopyrightAttribute)?.Copyright ?? string.Empty;
-            return (name, version, copyright);
+            if (Options.Verbosity < VerbosityLevel.Detailed) return;
+            Out.WriteLine(line);
         }
 
-        internal static void WriteToolError(string msgcode, string message)
+        internal void WriteLineNormal(string line)
         {
-            (string name, _, _) = GetAppInfo();
-            if (string.IsNullOrEmpty(msgcode)) msgcode = "MC9000";
-            Out.WriteLine($"{name} : error {msgcode}: {message}");
+            if (Options.Verbosity < VerbosityLevel.Normal) return;
+            Out.WriteLine(line);
+        }
+
+        internal void WriteFileError(string filePath, Exception ex)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                WriteToolError(ex);
+                return;
+            }
+            if (_exitCode == 0) _exitCode = 1;
+            WriteAppTitle();
+            int lineNumber = 0, linePosition = 0;
+            string msgcode = "MC9002";
+            if (ex is XmlException xex)
+            {
+                lineNumber = xex.LineNumber;
+                linePosition = xex.LinePosition;
+                msgcode = "MC9001";
+            }
+            Error.WriteLine($"{filePath}({lineNumber},{linePosition}): error {msgcode}: "
+                + (Options.Verbosity == VerbosityLevel.Diagnostic ? ex.ToString() : ex.Message));
+        }
+
+        internal void WriteToolError(Exception ex)
+        {
+            if (_exitCode == 0) _exitCode = 1;
+            WriteAppTitle();
+            string msgcode = "MC9000";
+            Error.WriteLine($"{Name} : error {msgcode}: "
+                + (Options.Verbosity == VerbosityLevel.Diagnostic ? ex.ToString() : ex.Message));
         }
 
         internal void WriteAppTitle()
         {
-            if (!Options.NoLogo)
-            {
-                (string name, string version, string copyright) = GetAppInfo();
-                Out.WriteLine($"{name} {version} {copyright}");
-            }
+            if (_titlesWritten.HasFlag(TitlesWritten.AppTitle)) return;
+            _titlesWritten |= TitlesWritten.AppTitle;
+            if (Options.NoLogo || Options.Verbosity == VerbosityLevel.Quiet) return;
+            Out.WriteLine($"{Name} {Version} {Copyright}");
         }
 
-        internal static void WriteHelpText()
+        internal void WriteInputTitle()
         {
-            (string name, _, _) = GetAppInfo();
+            if (_titlesWritten.HasFlag(TitlesWritten.InputTitle)) return;
+            _titlesWritten |= TitlesWritten.InputTitle;
+            WriteAppTitle();
+            WriteLineNormal("Input files:");
+        }
+
+        internal void WriteResultTitle()
+        {
+            if (_titlesWritten.HasFlag(TitlesWritten.ResultTitle)) return;
+            _titlesWritten |= TitlesWritten.ResultTitle;
+            WriteAppTitle();
+            WriteLineNormal("Results:");
+        }
+
+        internal void WriteHelpText()
+        {
+            WriteAppTitle();
             Out.WriteLine(@$"
-Usage: {name} [options] [filespecs]
+Usage: {Name} [options] [filespecs]
 
 Options:
-  -h|--help                            Display this help.
-  -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
-  -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
-  -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
-  -lo|--latest-only                    For each source file, uses only the data from the newest of all matching report files.
-  --                                   Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
+  -h|--help                       Display this help.
+  -ht|--hit-threshold <INT>       Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
+  -ct|--coverage-threshold <INT>  Lowest coverage in percent to consider a line with branches as covered.
+  -bt|--branch-threshold <INT>    Minimum # of total branches a line must have before the coverage threshold gets applied.
+  -lo|--latest-only               For each source file, uses only the data from the newest of all matching report files.
+  --no-collapse                   Reports each line separately. By default, lines with identical information are reported as range.
+  --max-linenumber <INT>          Sets the maximum line number allowed.
+  --no-logo                       Supresses version and copyright information.
+  -v|--verbosity <LEVEL>          Sets the verbosity level to q[uiet], m[inimal], n[ormal], d[etailed], or diag[nostic].
+  --                              Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
 
 Filespecs:
   Any number of space separated file specs. Wildcards * ? ** are supported.
   Absolute or relative paths can be used. Relative paths are based on the current directory.
 
 Default:
-  {name} --hit-threshold 1 --coverage-threshold 100 --branch-threshold 2 **\*cobertura*.xml
+  {Name} --hit-threshold 1 --coverage-threshold 100 --branch-threshold 2 --max-linenumber 50000 --verbosity normal **\*cobertura*.xml
 
 Examples:
   C:\MyProjects\**\*cobertura*.xml                     Process all xml files with name containing 'cobertura' recursively in all subdirectories of 'C:\MyProjects'.

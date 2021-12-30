@@ -1,0 +1,17 @@
+MissingCoverage 0.9.1-dev Copyright (c) 2021 Matthias Wolf, Mawosoft
+Input files:
+C:\Users\mw\Projects\MissingCoverage\tests\testdata\coverlet small.xml
+Results:
+C:\Users\mw\.nuget\packages\microsoft.net.test.sdk\16.10.0\build\netcoreapp2.1\Microsoft.NET.Test.Sdk.Program.cs(4): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(27): warning MC0001: Hits: 668 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(28): warning MC0001: Hits: 28 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(63): warning MC0001: Hits: 80 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(116): warning MC0001: Hits: 1153711 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(117-120): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(142): warning MC0001: Hits: 10 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ParallelismTests.cs(143): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ThreadsafeSidebarTests.cs(82): warning MC0001: Hits: 4 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ThreadsafeSidebarTests.cs(83): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.SidebarTests\ThreadsafeSidebarTests.cs(84-86): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(124): warning MC0001: Hits: 93 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(130): warning MC0001: Hits: 93 Branches: 50% (1/2)

@@ -20,19 +20,23 @@
 Usage: MissingCoverage [options] [filespecs]
 
 Options:
-  -h|--help                            Display this help.
-  -ht|--hit-threshold <INTEGER>        Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
-  -ct|--coverage-threshold <INTEGER>   Lowest coverage in percent to consider a line with branches as covered.
-  -bt|--branch-threshold <INTEGER>     Minimum # of total branches a line must have before the coverage threshold gets applied.
-  -lo|--latest-only                    For each source file, uses only the data from the newest of all matching report files.
-  --                                   Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
+  -h|--help                       Display this help.
+  -ht|--hit-threshold <INT>       Lowest # of line hits to consider a line as covered, i.e. to not include it as missing coverage in report.
+  -ct|--coverage-threshold <INT>  Lowest coverage in percent to consider a line with branches as covered.
+  -bt|--branch-threshold <INT>    Minimum # of total branches a line must have before the coverage threshold gets applied.
+  -lo|--latest-only               For each source file, uses only the data from the newest of all matching report files.
+  --no-collapse                   Reports each line separately. By default, lines with identical information are reported as range.
+  --max-linenumber <INT>          Sets the maximum line number allowed.
+  --no-logo                       Supresses version and copyright information.
+  -v|--verbosity <LEVEL>          Sets the verbosity level to q[uiet], m[inimal], n[ormal], d[etailed], or diag[nostic].
+  --                              Indicates that any subsequent arguments are filespecs, even if starting with hyphen (-).
 
 Filespecs:
   Any number of space separated file specs. Wildcards * ? ** are supported.
   Absolute or relative paths can be used. Relative paths are based on the current directory.
 
 Default:
-  MissingCoverage --hit-threshold 1 --coverage-threshold 100 --branch-threshold 2 **\*cobertura*.xml
+  MissingCoverage --hit-threshold 1 --coverage-threshold 100 --branch-threshold 2 --max-linenumber 50000 --verbosity normal **\*cobertura*.xml
 
 Examples:
   C:\MyProjects\**\*cobertura*.xml                     Process all xml files with name containing 'cobertura' recursively in all subdirectories of 'C:\MyProjects'.

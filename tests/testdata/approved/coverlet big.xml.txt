@@ -1,0 +1,152 @@
+MissingCoverage 0.9.1-dev Copyright (c) 2021 Matthias Wolf, Mawosoft
+Input files:
+C:\Users\mw\Projects\MissingCoverage\tests\testdata\coverlet big.xml
+Results:
+C:\Users\mw\.nuget\packages\microsoft.net.test.sdk\16.10.0\build\netcoreapp2.1\Microsoft.NET.Test.Sdk.Program.cs(4): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\BackoffException.cs(40): warning MC0001: Hits: 9 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\BackoffHandler.cs(98): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(75): warning MC0001: Hits: 93 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(84): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(102): warning MC0001: Hits: 52 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(109): warning MC0001: Hits: 47 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(110-111): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(114): warning MC0001: Hits: 47 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(195): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ImdbCacheHandler.cs(230): warning MC0001: Hits: 10 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceContext.cs(116): warning MC0001: Hits: 137 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceContext.cs(117): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceContext.cs(170): warning MC0001: Hits: 7008 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceHandler.cs(65): warning MC0001: Hits: 4020 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceHandler.cs(83): warning MC0001: Hits: 2698 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceHandler.cs(84-86): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\ResilienceHandler.cs(119): warning MC0001: Hits: 31 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\RetryHandler.cs(52): warning MC0001: Hits: 1 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\src\Mawosoft.ImdbScrape\Http\RetryHandler.cs(56): warning MC0001: Hits: 1 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\BackoffExceptionTests.cs(71): warning MC0001: Hits: 7 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\BackoffHandlerTests.cs(288-289): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(47): warning MC0001: Hits: 9 Branches: 67% (4/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(61): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(67): warning MC0001: Hits: 253 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(72): warning MC0001: Hits: 262 Branches: 25% (1/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(73): warning MC0001: Hits: 262 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(75): warning MC0001: Hits: 262 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(92): warning MC0001: Hits: 184 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(93): warning MC0001: Hits: 51 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(94): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(95): warning MC0001: Hits: 0 Branches: 0% (0/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(96-97): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(107): warning MC0001: Hits: 2 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(120): warning MC0001: Hits: 113 Branches: 67% (4/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(124): warning MC0001: Hits: 40 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(130): warning MC0001: Hits: 40 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(135): warning MC0001: Hits: 40 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(136): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(142): warning MC0001: Hits: 68 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(143): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(150): warning MC0001: Hits: 28 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(151): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(153): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(160-162): warning MC0001: Hits: 40 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(163): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(203): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\DeepEqualNotSameEqualityComparer.cs(204): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ImdbCacheHandlerTests.cs(105): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ImdbCacheHandlerTests.cs(314): warning MC0001: Hits: 6 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockCacheDirectory.cs(28-33): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockCacheDirectory.cs(36): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockCacheDirectory.cs(37): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockCacheDirectory.cs(38): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockCacheDirectory.cs(59): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockContent.cs(30-31): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockContent.cs(36): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(23): warning MC0001: Hits: 125 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(24): warning MC0001: Hits: 125 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(26-27): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(33): warning MC0001: Hits: 147 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(66): warning MC0001: Hits: 27 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(67): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(68): warning MC0001: Hits: 27 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(69): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(75): warning MC0001: Hits: 128 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(119-120): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(122): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(123): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(124): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(125): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(126): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(127): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(157): warning MC0001: Hits: 5 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(162): warning MC0001: Hits: 12 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockInvoker.cs(163): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(55): warning MC0001: Hits: 7 Branches: 50% (7/14)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(67): warning MC0001: Hits: 0 Branches: 0% (0/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(76): warning MC0001: Hits: 29 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(77): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(78): warning MC0001: Hits: 29 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(79): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(86): warning MC0001: Hits: 29 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(97-100): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(123): warning MC0001: Hits: 4439 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(124-126): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(131): warning MC0001: Hits: 4514 Branches: 88% (21/24)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(156): warning MC0001: Hits: 4319 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(158): warning MC0001: Hits: 4318 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(162-163): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(173): warning MC0001: Hits: 7 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(180-182): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(185): warning MC0001: Hits: 0 Branches: 0% (0/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockResponder.cs(203): warning MC0001: Hits: 4514 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockStageInvoker.cs(19): warning MC0001: Hits: 113 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockStageInvoker.cs(29): warning MC0001: Hits: 110 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\MockStageInvoker.cs(38): warning MC0001: Hits: 265 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(277): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(332): warning MC0001: Hits: 40 Branches: 58% (7/12)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(394-397): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(404-407): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(419): warning MC0001: Hits: 4 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(420-421): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(423): warning MC0001: Hits: 8 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(424): warning MC0001: Hits: 4 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(425): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(426): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RateLimiterTests.cs(427-431): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(331): warning MC0001: Hits: 4 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(332): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(333-335): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(419): warning MC0001: Hits: 100 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(421): warning MC0001: Hits: 100 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(426): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(433): warning MC0001: Hits: 2 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(434): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceContextTests.cs(435-437): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(83): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(194): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(298): warning MC0001: Hits: 1 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(304): warning MC0001: Hits: 4 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(305): warning MC0001: Hits: 4 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceHandlerTests.cs(412): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\ResilienceOptionsTests.cs(17): warning MC0001: Hits: 25 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryHandlerTests.cs(66): warning MC0001: Hits: 34 Branches: 75% (3/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryHandlerTests.cs(113): warning MC0001: Hits: 10 Branches: 50% (2/4)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryHandlerTests.cs(118): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryHandlerTests.cs(252): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(39): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(43): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(46): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(51): warning MC0001: Hits: 2 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(52): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(53): warning MC0001: Hits: 0 Branches: 0% (0/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(54): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(65): warning MC0001: Hits: 20 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(71): warning MC0001: Hits: 6 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(82): warning MC0001: Hits: 82 Branches: 50% (1/2)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\RetryPlusRateLimitHandlerTests.cs(94): warning MC0001: Hits: 2 Branches: 67% (4/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(86): warning MC0001: Hits: 43 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(100): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(102): warning MC0001: Hits: 43 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(114): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(116): warning MC0001: Hits: 43 Branches: 90% (9/10)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(134): warning MC0002: Hits: 0
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(140): warning MC0001: Hits: 43 Branches: 83% (5/6)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(155): warning MC0001: Hits: 0 Branches: 88% (7/8)
+C:\Users\mw\Projects\ImdbScrape\tests\UnitTests\Mawosoft.ImdbScrape.Tests\Http\TimeoutHandlerTests.cs(184): warning MC0002: Hits: 0

@@ -1,58 +1,204 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
 using System;
-using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Xml;
 using Xunit;
 using Xunit.Abstractions;
 
+using static Mawosoft.MissingCoverage.Tests.ProgramTestHelper;
+
 namespace Mawosoft.MissingCoverage.Tests
 {
-    public class ProgramTests
+    public partial class ProgramTests
     {
-        private readonly ITestOutputHelper _testOutput;
-        public ProgramTests(ITestOutputHelper testOutput) => _testOutput = testOutput;
-
-        private class RedirectWriter : TextWriter
+        [Fact]
+        public void WriteResultLine_WritesTitles()
         {
-            private readonly ITestOutputHelper _testOutput;
-            public RedirectWriter(ITestOutputHelper testOutput) => _testOutput = testOutput;
-            public override Encoding Encoding => Encoding.Unicode;
-            public override void Write(char value) => throw new NotImplementedException();
-            public override void WriteLine(string? value) => _testOutput.WriteLine(value);
+            RedirectWrapper wrapper = new();
+            string filePath = "somedir/somefile.cs";
+            LineInfo line = new() { Hits = 0 };
+            wrapper.Program.WriteResultLine(filePath, 1, 1, line);
+            AssertAppTitle(wrapper);
+            AssertResultTitle(wrapper);
+            AssertResultLine(wrapper, filePath, 1, 1, line);
+            Assert.Empty(wrapper.Lines);
         }
 
-        // TODO Add proper tests.
-        // This is just for coverage and manual validation.
-        [Theory(Skip = "Replace with proper tests")]
-        //[InlineData("-h")]
-        //[InlineData(null)]
-        //[InlineData("-ht", "0", "{testdata}*")]
-        //[InlineData("-ht", "0", "-bt", "4", "{testdata}*")]
-        //[InlineData("{testdata}coverlet big.xml")]
-        [InlineData("{testdata}coverlet small.xml")]
-        //[InlineData("{testdata}fcc merged.xml")]
-        //[InlineData("{testdata}coverlet*.xml")]
-        //[InlineData("-lo", "{testdata}*")]
-        public void Run_CmdlineArguments(params string[]? args)
+        [Theory]
+        [InlineData(0, 0, 0)]
+        [InlineData(0, 0, 2)]
+        [InlineData(10, 2, 2)]
+        [InlineData(111, 5, 6)]
+        internal void WriteResultLine_Succeeds_HonorsNoCollapse(int hits,
+                                                                ushort coveredBranches,
+                                                                ushort totalBranches)
         {
-            if (args != null)
+            string filePath = "somedir/somefile.cs";
+            foreach ((int firstLine, int lastLine) in new[] { (5, 5), (10, 12) })
             {
-                string path = TestFiles.GetTestDataDirectory();
-                for (int i = 0; i < args.Length; i++)
+                foreach (bool noCollapse in new[] { true, false })
                 {
-                    args[i] = args[i].Replace("{testdata}", path, StringComparison.Ordinal);
+                    LineInfo lineInfo = new()
+                    {
+                        Hits = hits,
+                        CoveredBranches = coveredBranches,
+                        TotalBranches = totalBranches
+                    };
+                    RedirectWrapper wrapper = new();
+                    wrapper.Program.Options.Verbosity = VerbosityLevel.Quiet; // Suppress titles
+                    wrapper.Program.Options.NoCollapse = noCollapse;
+                    wrapper.Program.WriteResultLine(filePath, firstLine, lastLine, lineInfo);
+                    AssertResultLine(wrapper, filePath, firstLine, lastLine, lineInfo);
+                    Assert.Empty(wrapper.Lines);
                 }
             }
-            RedirectWriter redirect = new(_testOutput);
-            Program.Out = redirect;
-            Program.Error = redirect;
-            //Program program = new();
-            //program.Run(args ?? Array.Empty<string>());
-            Program.Main(args ?? Array.Empty<string>());
         }
 
+        [Fact]
+        public void WriteLineNormal_WriteLineDetailed_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                string normal = "The normal line written.";
+                string detailed = "The detailed line written.";
+                wrapper.Program.WriteLineNormal(normal);
+                wrapper.Program.WriteLineDetailed(detailed);
+                switch (verbosity)
+                {
+                    case VerbosityLevel.Quiet or VerbosityLevel.Minimal:
+                        wrapper.Close();
+                        break;
+                    case VerbosityLevel.Normal:
+                        AssertOut(wrapper, normal);
+                        break;
+                    case VerbosityLevel.Detailed or VerbosityLevel.Diagnostic:
+                        AssertOut(wrapper, normal + Environment.NewLine + detailed);
+                        break;
+                    default:
+                        Assert.True(false, $"Unexpected VerbosityLevel: {verbosity}");
+                        break;
+                };
+                Assert.Empty(wrapper.Lines);
+            }
+        }
+
+        [Fact]
+        public void WriteFileError_WritesStderr_WritesAppTitle_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                Exception ex = Assert.ThrowsAny<Exception>(
+                    static () => throw new InvalidOperationException("My message"));
+                string filePath = "somedir/somefile.cs";
+                wrapper.Program.WriteFileError(filePath, ex);
+                AssertAppTitle(wrapper);
+                string expected = filePath + "(0,0): error MC9002: ";
+                expected += verbosity == VerbosityLevel.Diagnostic ? ex.ToString() : ex.Message;
+                AssertError(wrapper, expected);
+                Assert.Empty(wrapper.Lines);
+            }
+        }
+
+        [Fact]
+        public void WriteFileError_WithXmlException_WritesLineInfo()
+        {
+            RedirectWrapper wrapper = new();
+            Exception ex = Assert.ThrowsAny<Exception>(static () => throw new XmlException(null, null, 7, 20));
+            string filePath = "somedir/somefile.cs";
+            wrapper.Program.WriteFileError(filePath, ex);
+            AssertAppTitle(wrapper);
+            string expected = filePath + "(7,20): error MC9001: " + ex.Message;
+            AssertError(wrapper, expected);
+            Assert.Empty(wrapper.Lines);
+        }
+
+        [Fact]
+        public void WriteFileError_WithoutFilePath_WritesToolError()
+        {
+            RedirectWrapper wrapper = new();
+            Exception ex = Assert.ThrowsAny<Exception>(static () => throw new XmlException(null, null, 7, 20));
+            wrapper.Program.WriteFileError(null!, ex);
+            AssertAppTitle(wrapper);
+            string expected = "MissingCoverage : error MC9000: " + ex.Message;
+            AssertError(wrapper, expected);
+            Assert.Empty(wrapper.Lines);
+        }
+
+        [Fact]
+        public void WriteToolError_WritesStderr_WritesAppTitle_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                Exception ex = Assert.ThrowsAny<Exception>(
+                    static () => throw new InvalidOperationException("My message"));
+                wrapper.Program.WriteToolError(ex);
+                AssertAppTitle(wrapper);
+                string expected = "MissingCoverage : error MC9000: ";
+                expected += verbosity == VerbosityLevel.Diagnostic ? ex.ToString() : ex.Message;
+                AssertError(wrapper, expected);
+                Assert.Empty(wrapper.Lines);
+            }
+        }
+
+        [Fact]
+        public void WriteAppTitle_WritesOnce_HonorsNoLogo()
+        {
+            RedirectWrapper wrapper = new();
+            wrapper.Program.Options.NoLogo = true;
+            wrapper.Program.WriteAppTitle();
+            wrapper.Program.WriteAppTitle();
+            AssertAppTitle(wrapper);
+            Assert.Empty(wrapper.Lines);
+        }
+
+        [Fact]
+        public void WriteAppTitle_WritesOnce_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                wrapper.Program.WriteAppTitle();
+                wrapper.Program.WriteAppTitle();
+                AssertAppTitle(wrapper);
+                Assert.Empty(wrapper.Lines);
+            }
+        }
+
+        [Fact]
+        public void WriteInputTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                wrapper.Program.WriteInputTitle();
+                wrapper.Program.WriteInputTitle();
+                AssertAppTitle(wrapper);
+                AssertInputTitle(wrapper);
+                Assert.Empty(wrapper.Lines);
+            }
+        }
+
+        [Fact]
+        public void WriteResultTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
+        {
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            {
+                RedirectWrapper wrapper = new();
+                wrapper.Program.Options.Verbosity = verbosity;
+                wrapper.Program.WriteResultTitle();
+                wrapper.Program.WriteResultTitle();
+                AssertAppTitle(wrapper);
+                AssertResultTitle(wrapper);
+                Assert.Empty(wrapper.Lines);
+            }
+        }
     }
 }
