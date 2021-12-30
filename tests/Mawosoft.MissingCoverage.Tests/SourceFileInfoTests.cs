@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 
@@ -321,6 +322,36 @@ namespace Mawosoft.MissingCoverage.Tests
             {
                 Assert.Equal((i, expected.Line(i)), (i, target.Line(i)));
             }
+        }
+
+        [Fact]
+        internal void LineSequences_Succeeds()
+        {
+            SourceFileInfo source = new("somefile", DateTime.UtcNow);
+            List<(int, int)> expected = new();
+            Assert.Equal(expected, source.LineSequences());
+            // Force LastLineNumber = 5, but clear line afterwards
+            source.AddOrMergeLine(5, new() { Hits = 0 });
+            GetPrivateLinesArray(source)[5] = default;
+            Assert.Equal(expected, source.LineSequences());
+            source.AddOrMergeLine(2, new() { Hits = 0 });
+            expected.Add((2, 2));
+            Assert.Equal(expected, source.LineSequences());
+            source.AddOrMergeLine(3, source.Line(2));
+            expected[^1] = (2, 3);
+            Assert.Equal(expected, source.LineSequences());
+            source.AddOrMergeLine(4, new() { Hits = 10 });
+            source.AddOrMergeLine(5, source.Line(4));
+            source.AddOrMergeLine(6, source.Line(4));
+            expected.Add((4, 6));
+            Assert.Equal(expected, source.LineSequences());
+            source.AddOrMergeLine(7, new() { Hits = 10, TotalBranches = 4 });
+            expected.Add((7, 7));
+            Assert.Equal(expected, source.LineSequences());
+            source.AddOrMergeLine(9, source.Line(7));
+            source.AddOrMergeLine(10, source.Line(7));
+            expected.Add((9, 10));
+            Assert.Equal(expected, source.LineSequences());
         }
     }
 }

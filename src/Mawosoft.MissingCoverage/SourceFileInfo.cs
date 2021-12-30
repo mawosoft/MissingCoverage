@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2021 Matthias Wolf, Mawosoft.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Mawosoft.MissingCoverage
@@ -51,6 +52,9 @@ namespace Mawosoft.MissingCoverage
             _lines = new LineInfo[DefaultLineCount];
         }
 
+        public override string ToString()
+            => $"{SourceFilePath} ({LastLineNumber}) [{ReportTimestamp}]";
+
         public void AddOrMergeLine(int lineNumber, LineInfo line)
         {
             if (lineNumber <= 0)
@@ -100,6 +104,20 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
+        public IEnumerable<(int firstLine, int lastLine)> LineSequences()
+        {
+            int lineNumber = 1;
+            while (lineNumber <= LastLineNumber)
+            {
+                while (lineNumber <= LastLineNumber && !_lines[lineNumber].IsLine) { lineNumber++; }
+                if (lineNumber > LastLineNumber) break;
+                int firstLine = lineNumber;
+                LineInfo firstInfo = _lines[lineNumber++];
+                while (lineNumber <= LastLineNumber && _lines[lineNumber].Equals(firstInfo)) { lineNumber++; }
+                yield return (firstLine, lineNumber - 1);
+            }
+        }
+
         private void GrowLines(int minLineNumber)
         {
             int minCapacity = minLineNumber + 1;
@@ -110,8 +128,5 @@ namespace Mawosoft.MissingCoverage
             if (newCapacity < minCapacity) newCapacity = minCapacity;
             Array.Resize(ref _lines, newCapacity);
         }
-
-        public override string ToString()
-            => $"{SourceFilePath} ({LastLineNumber}) [{ReportTimestamp}]";
     }
 }
