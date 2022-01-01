@@ -50,8 +50,6 @@ namespace Mawosoft.MissingCoverage.Tests
                 wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
                 wrapper.Program.Options.GlobPatterns.Add(Path.Combine("subdir1", "subdir1", "report2.xml"));
                 wrapper.Program.Options.GlobPatterns.Add(files[0]); // Switch beetween relative/absolute
-                // Adjust for problem described above.
-                files[0] = Path.Combine(Directory.GetCurrentDirectory(), Path.GetRelativePath(tempDirectory.FullPath, files[0]));
                 wrapper.Program.Options.GlobPatterns.Add(Path.Combine("subdir1", "subdir2", "report*.xml"));
                 wrapper.Program.Options.GlobPatterns.Add(Path.Combine("subdir2", "*", "*"));
                 IEnumerable<string> inputFiles = wrapper.Program.GetInputFiles();
