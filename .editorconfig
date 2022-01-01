@@ -1,6 +1,6 @@
 # editorconfig.org
 # https://github.com/dotnet/runtime/blob/master/.editorconfig
-# last commit 23.03.2021
+# commit used: 23.03.2021
 # Customized: file_header_template (line ~176)
 # Customized: notes on max_line_length added
 
@@ -173,7 +173,7 @@ dotnet_code_quality.CA1822.api_surface = private, internal
 dotnet_code_quality.CA2208.api_surface = public
 
 # License header
-file_header_template = Copyright (c) 2021 Matthias Wolf, Mawosoft.
+file_header_template = Copyright (c) 2021-2022 Matthias Wolf, Mawosoft.
 
 # C++ Files
 [*.{cpp,h,in}]
