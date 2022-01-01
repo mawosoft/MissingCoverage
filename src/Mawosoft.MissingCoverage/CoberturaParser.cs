@@ -254,7 +254,16 @@ namespace Mawosoft.MissingCoverage
             if (sourceDirectories.Count == 0)
                 return fileName;
             else if (sourceDirectories.Count == 1)
-                return Path.Combine(sourceDirectories[0], fileName);
+            {
+                // We cannot rely on Path.Combine to detect an absolute win path on MacOS or Linux.
+                // "c:\something\" will read as relative there. We don't check if the file exists
+                // for a single source dir, so we have to prevent Combine in this case.
+                return fileName.Length >= 2
+                       && fileName[1] == ':'
+                       && fileName[0] is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z')
+                    ? fileName
+                    : Path.Combine(sourceDirectories[0], fileName);
+            }
             else
             {
                 foreach (string sourceDirectory in sourceDirectories)
