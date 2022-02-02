@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.1" />
-    <PackageVersion Include="coverlet.collector" Version="3.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.1" />
     <PackageVersion Include="Mawosoft.Extensions.BenchmarkDotNet" Version="0.2.1" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />

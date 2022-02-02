@@ -1,0 +1,55 @@
+name: $(date:yyyyMMdd)$(rev:.r)
+
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: master
+
+trigger:
+  batch: true
+  branches: { include: [master] }
+  paths: { exclude: [README.md, assets/**, tests/benchmarks/** ] }
+
+pr:
+  autoCancel: true
+  branches: { include: [master] }
+  paths: { exclude: [README.md, assets, tests/benchmarks ] }
+
+pool:
+  vmImage: ubuntu-latest
+
+variables: 
+  disable.coverage.autogenerate: true
+
+steps:
+- checkout: self
+- pwsh: dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net5.0
+  displayName: Build
+- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net5.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
+  displayName: Test
+- task: reportgenerator@5
+  condition: succeededOrFailed()
+  inputs:
+    reports: ./TestResults/Debug/net5.0/*.xml
+    targetdir: ./TestResults/report
+    reporttypes: Cobertura;HtmlInline_AzurePipelines
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFormat: VSTest
+    testResultsFiles: '*.trx'
+    searchFolder: ./TestResults/Debug/net5.0
+    publishRunAttachments: false
+- task: PublishCodeCoverageResults@1
+  condition: succeededOrFailed()
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: ./TestResults/report/Cobertura.xml
+    reportDirectory: ./TestResults/report
+- bash: |
+    curl -o "./codecov" -s https://uploader.codecov.io/latest/linux/codecov
+    chmod +x "./codecov"
+    "./codecov" -f ./TestResults/report/Cobertura.xml -t $(CODECOV_TOKEN)
+  condition: succeededOrFailed()
+  displayName: Upload to codecov.io

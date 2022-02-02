@@ -1,6 +1,20 @@
 <Project>
 
+  <PropertyGroup Condition="'$(CI)' == ''">
+    <CI>false</CI>
+    <!-- GitHub already defines CI -->
+    <CI Condition="'$(TF_BUILD)' == 'true' or '$(APPVEYOR)' != ''">true</CI>
+  </PropertyGroup>
+
+  <!-- TFMs for main and test projects (local/CI) -->
   <PropertyGroup>
+    <_MainTargetFrameworks>netcoreapp3.1;net5.0</_MainTargetFrameworks>
+    <_MainTargetFrameworks Condition="'$(CI)' == 'true'">netcoreapp3.1;net5.0;net6.0</_MainTargetFrameworks>
+    <ContinuousIntegrationBuild>$(CI)</ContinuousIntegrationBuild>
+    <Deterministic>$(CI)</Deterministic>
+  </PropertyGroup>
+
+<PropertyGroup>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
@@ -14,4 +28,7 @@
     <Version>0.9.1-dev</Version>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

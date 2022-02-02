@@ -1,0 +1,191 @@
+name: CI/CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'Matrix or single OS'
+        type: choice
+        default: 'matrix'
+        options:
+        - matrix
+        - windows-latest
+        - ubuntu-latest
+        - macos-latest
+      fail-fast:
+        description: 'Fail fast'
+        type: boolean
+      skip-tests:
+        description: 'Skip tests'
+        type: boolean
+      deploy:
+        description: 'Deploy packages'
+        type: boolean
+      release:
+        description: 'Create GitHub release'
+        type: boolean
+  push:
+    branches: master
+    paths-ignore: [README.md, assets/**, tests/benchmarks/** ]
+  pull_request:
+    branches: master
+    paths-ignore: [README.md, assets/**, tests/benchmarks/** ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: pwsh
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  Prepare:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Prepare Build matrix
+      id: prep
+      run: |
+        $os = "[""windows-latest"", ""ubuntu-latest"", ""macos-latest""]"
+        if ($${{ github.event.inputs.os != 'matrix' && github.event.inputs.os != '' }}) {
+          $os = "[""${{ github.event.inputs.os }}""]"
+        }
+        Write-Host "::set-output name=os::$os"
+    outputs:
+      matrix_os: ${{ steps.prep.outputs.os }}
+
+  Build:
+    needs: Prepare
+    outputs:
+      deploy: ${{ steps.set_output.outputs.deploy }}
+      release: ${{ steps.set_output.outputs.release }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ${{ fromJSON(needs.Prepare.outputs.matrix_os) }}
+      fail-fast: ${{ github.event.inputs.fail-fast == 'true' }} 
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Setup DotNet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: |
+          3.1.x
+          5.0.x
+          6.0.x
+    - name: DotNet Info
+      run: dotnet --info
+    - name: Build
+      run: |
+        . ./build/startNativeExecution.ps1
+        Set-Alias exec Start-NativeExecution
+        exec { dotnet restore -bl:./Binlogs/restore.binlog }
+        exec { dotnet build -c Debug --no-restore -bl:./Binlogs/build_debug.binlog }
+        exec { dotnet build -c Release --no-restore -bl:./Binlogs/build_release.binlog }
+        exec { dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages -bl:./Binlogs/pack.binlog }
+    - name: Upload Binlogs
+      if: ${{ failure() || github.event_name == 'workflow_dispatch' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-Binlogs
+        path: ./Binlogs/
+    - name: Upload Packages
+      if: ${{ matrix.os == 'ubuntu-latest' || strategy.job-total == 1 }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: Packages
+        path: ./Packages/
+    - name: Set Deployment and Release Outputs
+      id: set_output
+      if: ${{ (matrix.os == 'ubuntu-latest' || strategy.job-total == 1) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+      run: |
+        [string] $semver = '^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+        $version = (select-xml -Path ./Directory.Build.props -XPath "//Version").Node.InnerText
+        if ($version -cnotmatch $semver)
+        {
+            throw "Invalid Version property."
+        }
+        # TODO We might allow tags starting with 'rc' or 'pre' to be published to Nuget.
+        if ($Matches.prerelease) {
+          $deploy = "Azure"
+          $release = ""
+        }
+        else {
+          $deploy = "Nuget"
+          $release = "v$version"
+        }
+        Write-Host "Version: $version, Deploy: $deploy, Release: $release"
+        Write-Host "::set-output name=deploy::$deploy"
+        Write-Host "::set-output name=release::$release"
+    - name: Test
+      id: test
+      if: ${{ github.event.inputs.skip-tests != 'true' }}
+      run: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f netcoreapp3.1, net5.0, net6.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
+    - name: Upload Test results
+      if: ${{ always() && steps.test.outcome != 'skipped' }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-Testresults
+        path: ./TestResults/
+    - name: Test Tool Install, Run, Uninstall
+      # TODO tool param
+      run: |
+        . ./build/startNativeExecution.ps1
+        Set-Alias exec Start-NativeExecution
+        exec { dotnet tool install Mawosoft.MissingCoverage -g --version "*-*" --add-source ./Packages }
+        exec { MissingCoverage }
+        exec { dotnet tool uninstall Mawosoft.MissingCoverage -g }
+
+  Deploy:
+    needs: Build
+    if: ${{ needs.Build.outputs.deploy != '' && github.event.inputs.deploy != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Packages
+      uses: actions/download-artifact@v2
+      with:
+        name: Packages
+        path: ./Packages/
+    - name: Install Azure Credential Provider
+      run: Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) }"
+    - name: Deploy to Azure
+      env:
+        VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: '{"endpointCredentials": [{"endpoint":"https://pkgs.dev.azure.com/mawosoft-de/public/_packaging/public/nuget/v3/index.json", "password":"${{ secrets.AZURE_PACKAGE_PAT }}"}]}'
+      run: dotnet nuget push ./Packages/*.nupkg --skip-duplicate --source https://pkgs.dev.azure.com/mawosoft-de/public/_packaging/public/nuget/v3/index.json --api-key az
+
+  Publish:
+    needs: Build
+    if: ${{ needs.Build.outputs.deploy == 'Nuget' && github.event.inputs.deploy != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Packages
+      uses: actions/download-artifact@v2
+      with:
+        name: Packages
+        path: ./Packages/
+    - name: Publish to Nuget
+      run: dotnet nuget push ./Packages/*.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
+
+  Release:
+    needs: Build
+    if: ${{ needs.Build.outputs.release != '' && github.event.inputs.release != 'false' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - name: Create GitHub release
+      # TODO release notes
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ needs.Build.outputs.release }}
+        generate_release_notes: false # false is default. Seems to draw from PRs only.

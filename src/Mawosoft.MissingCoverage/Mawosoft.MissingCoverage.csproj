@@ -1,26 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Choose>
-    <When Condition="'$(GITHUB_ACTIONS)' == 'true'">
-      <PropertyGroup>
-        <TargetFrameworks>net6.0;net5.0</TargetFrameworks>
-        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-        <Deterministic>true</Deterministic>
-      </PropertyGroup>
-    </When>
-    <Otherwise>
-      <PropertyGroup>
-        <TargetFrameworks>net5.0</TargetFrameworks>
-      </PropertyGroup>
-    </Otherwise>
-  </Choose>
-
   <PropertyGroup>
+    <TargetFrameworks>$(_MainTargetFrameworks)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,6 +17,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>MissingCoverage</ToolCommandName>
     <PackageDescription>Easily navigate to the blind spots of your unit testing in Visual Studio.</PackageDescription>
+    <!-- TODO more/better tags? -->
     <PackageTags>code-coverage;visual-studio;unit-testing</PackageTags>
     <PackageIcon>packageIcon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -37,11 +25,8 @@
     <RepositoryUrl>https://github.com/mawosoft/MissingCoverage</RepositoryUrl>
     <PackageProjectUrl>https://github.com/mawosoft/MissingCoverage</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <!-- TODO ReadMe; more/better tags -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,7 +39,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
