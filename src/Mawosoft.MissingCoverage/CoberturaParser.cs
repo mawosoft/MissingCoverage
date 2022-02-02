@@ -299,13 +299,13 @@ namespace Mawosoft.MissingCoverage
         }
 
         [DoesNotReturn]
-        private void ThrowXmlException(string? message = null, Exception? innerException = null)
+        private void ThrowXmlException(string message, Exception? innerException = null)
         {
             ThrowXmlException(_xmlReader as IXmlLineInfo, message, innerException);
         }
 
         [DoesNotReturn]
-        private static void ThrowXmlException(IXmlLineInfo? xmlLineInfo, string? message = null, Exception? innerException = null)
+        private static void ThrowXmlException(IXmlLineInfo? xmlLineInfo, string message, Exception? innerException = null)
         {
             int lineNumber = 0, linePosition = 0;
             if (xmlLineInfo?.HasLineInfo() == true)
@@ -313,6 +313,9 @@ namespace Mawosoft.MissingCoverage
                 lineNumber = xmlLineInfo.LineNumber;
                 linePosition = xmlLineInfo.LinePosition;
             }
+#if !NET5_0_OR_GREATER
+            message ??= "XML error."; // COMPAT net31 doesn't use default message if null.
+#endif
             throw new XmlException(message, innerException, lineNumber, linePosition);
         }
     }

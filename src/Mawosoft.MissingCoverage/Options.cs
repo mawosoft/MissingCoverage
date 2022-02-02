@@ -158,7 +158,9 @@ namespace Mawosoft.MissingCoverage
                     {
                         found = false; // Strings will be parsed later
                     }
-                    else if (Enum.IsDefined((VerbosityLevel)intVal))
+                    // COMPAT net31 doesn't have generic Enum.IsDefined<TEnum>().
+                    // PERF Non-generic method 3x slower, but shouldn't matter here.
+                    else if (Enum.IsDefined(typeof(VerbosityLevel), intVal))
                     {
                         Verbosity = (VerbosityLevel)intVal;
                         valid = true;
@@ -179,7 +181,8 @@ namespace Mawosoft.MissingCoverage
             switch (option)
             {
                 case "v" or "verbosity":
-                    if (Enum.TryParse(value, ignoreCase: true, out VerbosityLevel level) && Enum.IsDefined(level))
+                    // COMPAT net31. See notes above.
+                    if (Enum.TryParse(value, ignoreCase: true, out VerbosityLevel level) && Enum.IsDefined(typeof(VerbosityLevel), level))
                     {
                         Verbosity = level;
                         valid = true;

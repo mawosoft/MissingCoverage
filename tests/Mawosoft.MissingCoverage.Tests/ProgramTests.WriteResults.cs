@@ -77,7 +77,7 @@ namespace Mawosoft.MissingCoverage.Tests
                     source.AddOrMergeLine(1, new LineInfo() { Hits = 1 });
                     result.AddOrMergeSourceFile(source);
                 }
-                foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+                foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
                 {
                     RedirectWrapper wrapper = new();
                     wrapper.Program.Options.Verbosity = verbosity;

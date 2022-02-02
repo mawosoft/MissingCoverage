@@ -33,7 +33,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void ProcessInputFiles_Succeeds_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 using TempDirectory tempDirectory = new();
                 List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
@@ -57,7 +57,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void ProcessInputFiles_StopsOnException_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 using TempDirectory tempDirectory = new();
                 List<string> files = CreateMinimalReportFiles(tempDirectory, 3);

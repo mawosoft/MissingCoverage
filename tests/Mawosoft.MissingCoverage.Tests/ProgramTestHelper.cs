@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -11,6 +12,17 @@ namespace Mawosoft.MissingCoverage.Tests
 {
     internal static class ProgramTestHelper
     {
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TEnum[] EnumGetValues<TEnum>() where TEnum : struct, Enum
+        {
+#if NET5_0_OR_GREATER
+            return Enum.GetValues<TEnum>();
+#else
+            return (TEnum[])Enum.GetValues(typeof(TEnum));
+#endif
+        }
+
         // Wrapper will be closed and successfully asserted lines at the top will be removed.
 
         public static void AssertLines(RedirectWrapper wrapper, string prefix, string expectedMultiLine)

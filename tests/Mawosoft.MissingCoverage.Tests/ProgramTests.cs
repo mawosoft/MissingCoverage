@@ -57,7 +57,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteLineNormal_WriteLineDetailed_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
@@ -87,7 +87,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteFileError_WritesStderr_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
@@ -107,7 +107,8 @@ namespace Mawosoft.MissingCoverage.Tests
         public void WriteFileError_WithXmlException_WritesLineInfo()
         {
             RedirectWrapper wrapper = new();
-            Exception ex = Assert.ThrowsAny<Exception>(static () => throw new XmlException(null, null, 7, 20));
+            // COMPAT net31 doesn't use default message if null.
+            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException("Xml error.", null, 7, 20)));
             string filePath = "somedir/somefile.cs";
             wrapper.Program.WriteFileError(filePath, ex);
             AssertAppTitle(wrapper);
@@ -120,7 +121,8 @@ namespace Mawosoft.MissingCoverage.Tests
         public void WriteFileError_WithoutFilePath_WritesToolError()
         {
             RedirectWrapper wrapper = new();
-            Exception ex = Assert.ThrowsAny<Exception>(static () => throw new XmlException(null, null, 7, 20));
+            // COMPAT net31 doesn't use default message if null.
+            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException("Xml error.", null, 7, 20)));
             wrapper.Program.WriteFileError(null!, ex);
             AssertAppTitle(wrapper);
             string expected = "MissingCoverage : error MC9000: " + ex.Message;
@@ -131,7 +133,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteToolError_WritesStderr_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
@@ -160,7 +162,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteAppTitle_WritesOnce_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
@@ -174,7 +176,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteInputTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
@@ -189,7 +191,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteResultTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;

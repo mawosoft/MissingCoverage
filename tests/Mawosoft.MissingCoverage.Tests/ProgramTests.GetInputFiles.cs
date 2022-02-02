@@ -83,7 +83,7 @@ namespace Mawosoft.MissingCoverage.Tests
         public void GetInputFiles_NoFiles_Throws_HonorsVerbosity()
         {
             using TempDirectory tempDirectory = new();
-            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
             {
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;

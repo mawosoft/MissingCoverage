@@ -32,17 +32,18 @@ namespace Mawosoft.MissingCoverage.Tests
             int pos = exception.LinePosition - fileLine.Length + (fileLine = fileLine.TrimStart()).Length;
             string[] elementLines = report.FirstInvalidElement!
                 .ToString()
-                .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.TrimEntries);
+                .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
             string elementLine;
             int expectedPos;
             if (fileLine.StartsWith("</", StringComparison.Ordinal))
             {
-                elementLine = elementLines[^1];
+                // COMPAT net31 doesn't have StringSplitOptions.TrimEntries
+                elementLine = elementLines[^1].Trim();
                 expectedPos = 3;
             }
             else
             {
-                elementLine = elementLines[0];
+                elementLine = elementLines[0].Trim();
                 expectedPos = 2;
             }
 
