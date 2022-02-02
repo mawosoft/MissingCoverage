@@ -19,7 +19,7 @@ pr:
 pool:
   vmImage: ubuntu-latest
 
-variables: 
+variables:
   disable.coverage.autogenerate: true
 
 steps:

@@ -75,21 +75,21 @@ foreach ($project in $Projects) {
         [string]$projectResultsDirectory = $ResultsDirectory
     }
     else {
-        [string]$projectResultsDirectory = 
+        [string]$projectResultsDirectory =
         Join-Path $ResultsDirectory ([System.IO.Path]::GetFileNameWithoutExtension($project))
     }
     foreach ($config in $Configs) {
         foreach ($framework in $Frameworks) {
 
             [string]$currentResultsDirectory = Join-Path $projectResultsDirectory $config $framework
-            
+
             # Clear result directory
             Remove-Item (Join-Path $currentResultsDirectory "*") -Recurse -ErrorAction Ignore
-            
+
             # Create dotnet command line
             [string[]] $params = @("test", "`"$project`"", "--nologo")
-            if (-not $Build.IsPresent) { 
-                $params += "--no-build" 
+            if (-not $Build.IsPresent) {
+                $params += "--no-build"
             }
             $params += "-c", $config
             $params += "-f", $framework
@@ -134,7 +134,7 @@ foreach ($project in $Projects) {
             # Copy coverage results (if any) from random subdir into results dir, then remove subdirs
             # Directory may not exist if the test didn't run
             if ([System.IO.Directory]::Exists($currentResultsDirectory)) {
-                Get-ChildItem (Join-Path $currentResultsDirectory "*" "*") -File | 
+                Get-ChildItem (Join-Path $currentResultsDirectory "*" "*") -File |
                 Copy-Item -Destination $currentResultsDirectory
                 Get-ChildItem $currentResultsDirectory -Directory | Remove-Item -Recurse
             }
