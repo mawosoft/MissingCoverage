@@ -40,7 +40,7 @@ namespace System.IO
         //   - GITHUB_WORKSPACE (directory)
         // - Azure DevOps: https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
         //   - TF_BUILD (True)
-        //   - Build.SourcesDirectory (direcotry if single repo)
+        //   - BUILD_SOURCESDIRECTORY (directory if single repo)
         // - AppVeyor: https://www.appveyor.com/docs/environment-variables/
         //   - APPVEYOR (True/true), CI (True/true)
         //   - APPVEYOR_BUILD_FOLDER (path to clone directory)
@@ -54,7 +54,7 @@ namespace System.IO
                 return path;
             }
             if (Environment.GetEnvironmentVariable("TF_BUILD") != null
-                && (path = Environment.GetEnvironmentVariable("Build.SourcesDirectory")) != null
+                && (path = Environment.GetEnvironmentVariable("BUILD_SOURCESDIRECTORY")) != null
                 && Directory.Exists(path))
             {
                 return path;
