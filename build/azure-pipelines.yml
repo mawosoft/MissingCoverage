@@ -30,10 +30,19 @@ steps:
   displayName: Test
 - task: reportgenerator@5
   condition: succeededOrFailed()
+  displayName: 'Coverage report for Azure (incl. test assembly)'
   inputs:
     reports: ./TestResults/Debug/net5.0/*.xml
-    targetdir: ./TestResults/report
+    targetdir: ./TestResults/report1
     reporttypes: Cobertura;HtmlInline_AzurePipelines
+- task: reportgenerator@5
+  condition: succeededOrFailed()
+  displayName: 'Coverage report for codecov.io (excluding test assembly)'
+  inputs:
+    reports: ./TestResults/Debug/net5.0/*.xml
+    targetdir: ./TestResults/report2
+    reporttypes: Cobertura
+    assemblyfilters: -Mawosoft.MissingCoverage.Tests
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:
@@ -45,11 +54,11 @@ steps:
   condition: succeededOrFailed()
   inputs:
     codeCoverageTool: Cobertura
-    summaryFileLocation: ./TestResults/report/Cobertura.xml
-    reportDirectory: ./TestResults/report
+    summaryFileLocation: ./TestResults/report1/Cobertura.xml
+    reportDirectory: ./TestResults/report1
 - bash: |
     curl -o "./codecov" -s https://uploader.codecov.io/latest/linux/codecov
     chmod +x "./codecov"
-    "./codecov" -f ./TestResults/report/Cobertura.xml -t $(CODECOV_TOKEN)
+    "./codecov" -f ./TestResults/report2/Cobertura.xml -t $(CODECOV_TOKEN)
   condition: succeededOrFailed()
   displayName: Upload to codecov.io
