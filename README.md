@@ -7,6 +7,10 @@
 
 ### To use Missing Coverage
 - Make sure the coverage reports are available in *Cobertura* format.
+- Install *Missing Coverage* as a .NET tool. See the [.NET documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/global-tools) for more details.
+```
+dotnet tool install -g Mawosoft.MissingCoverage
+```
 - Add *Missing Coverage* as an external tool to *Visual Studio*.
 
 ![](assets/VStudio_ExternalTools.png)
