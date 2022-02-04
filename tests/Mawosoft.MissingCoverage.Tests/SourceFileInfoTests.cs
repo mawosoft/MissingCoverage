@@ -113,47 +113,6 @@ namespace Mawosoft.MissingCoverage.Tests
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(-1)]
-        [InlineData(-50)]
-        [InlineData(int.MinValue)]
-        public void MaxLineNumber_InvalidValue_Throws(int maxLineNumber)
-        {
-            int initialValue = SourceFileInfo.MaxLineNumber;
-            try
-            {
-                ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(
-                    nameof(SourceFileInfo.MaxLineNumber),
-                    () => SourceFileInfo.MaxLineNumber = maxLineNumber);
-                Assert.Equal(initialValue, SourceFileInfo.MaxLineNumber);
-            }
-            finally
-            {
-                SourceFileInfo.MaxLineNumber = initialValue;
-            }
-        }
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(50)]
-        [InlineData(int.MaxValue)]
-        public void MaxLineNumber_Roundtrip(int maxLineNumber)
-        {
-            int initialValue = SourceFileInfo.MaxLineNumber;
-            Assert.Equal(50_000, initialValue); // Track changes
-            try
-            {
-                SourceFileInfo.MaxLineNumber = maxLineNumber;
-                Assert.Equal(maxLineNumber, SourceFileInfo.MaxLineNumber);
-            }
-            finally
-            {
-                SourceFileInfo.MaxLineNumber = initialValue;
-                Assert.Equal(initialValue, SourceFileInfo.MaxLineNumber);
-            }
-        }
-
-        [Theory]
         [InlineData(-1)]
         [InlineData(100_000)]
         [InlineData(int.MaxValue)]
@@ -352,6 +311,51 @@ namespace Mawosoft.MissingCoverage.Tests
             source.AddOrMergeLine(10, source.Line(7));
             expected.Add((9, 10));
             Assert.Equal(expected, source.LineSequences());
+        }
+    }
+
+    [Collection(nameof(NoParallelTests))]
+    public class SourceFileInfoTests_NoParallelTests
+    {
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(-50)]
+        [InlineData(int.MinValue)]
+        public void MaxLineNumber_InvalidValue_Throws(int maxLineNumber)
+        {
+            int initialValue = SourceFileInfo.MaxLineNumber;
+            try
+            {
+                ArgumentOutOfRangeException ex = Assert.Throws<ArgumentOutOfRangeException>(
+                    nameof(SourceFileInfo.MaxLineNumber),
+                    () => SourceFileInfo.MaxLineNumber = maxLineNumber);
+                Assert.Equal(initialValue, SourceFileInfo.MaxLineNumber);
+            }
+            finally
+            {
+                SourceFileInfo.MaxLineNumber = initialValue;
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(50)]
+        [InlineData(int.MaxValue)]
+        public void MaxLineNumber_Roundtrip(int maxLineNumber)
+        {
+            int initialValue = SourceFileInfo.MaxLineNumber;
+            Assert.Equal(50_000, initialValue); // Track changes
+            try
+            {
+                SourceFileInfo.MaxLineNumber = maxLineNumber;
+                Assert.Equal(maxLineNumber, SourceFileInfo.MaxLineNumber);
+            }
+            finally
+            {
+                SourceFileInfo.MaxLineNumber = initialValue;
+                Assert.Equal(initialValue, SourceFileInfo.MaxLineNumber);
+            }
         }
     }
 }

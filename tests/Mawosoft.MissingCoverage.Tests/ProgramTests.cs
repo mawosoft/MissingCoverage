@@ -203,4 +203,9 @@ namespace Mawosoft.MissingCoverage.Tests
             }
         }
     }
+
+    [Collection(nameof(NoParallelTests))]
+    public partial class ProgramTests_NoParallelTests
+    {
+    }
 }

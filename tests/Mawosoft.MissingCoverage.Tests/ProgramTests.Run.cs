@@ -70,7 +70,10 @@ namespace Mawosoft.MissingCoverage.Tests
             wrapper.Lines.RemoveAt(0);
             Assert.Empty(wrapper.Lines);
         }
+    }
 
+    public partial class ProgramTests_NoParallelTests
+    {
         [Theory]
         [InlineData("coverlet small.xml")]
         [InlineData("coverlet big.xml")]

@@ -32,7 +32,10 @@ namespace Mawosoft.MissingCoverage.Tests
             wrapper.Close();
             Assert.Empty(wrapper.Lines);
         }
+    }
 
+    public partial class ProgramTests_NoParallelTests
+    {
         [Fact]
         public void Configure_AppliesMaxLineNumber()
         {
