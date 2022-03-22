@@ -5,7 +5,14 @@
     Check solution/project dependencies for outdated/vulnerable/deprecated
 
 .DESCRIPTION
-    TODO description
+    Runs all 'dotnet list package' reports and discovers new dependency problems by comparing
+    the results to artifacts from previous workflow runs.The script will download the previous
+    artifact, but the caller is responsible for uploading the new one.
+    Creates an issue, if new breaking changes have been found.
+
+.OUTPUTS
+    None. Sets workflow step outputs 'ArtifactName' and 'ArtifactPath' via workflow commands
+    issued by Write-Host.
 #>
 
 #Requires -Version 7
@@ -103,9 +110,9 @@ if ($previousResult) {
     [ListPackageComparison]$diff = [ListPackageComparison]::new($previousResult, $result)
     [HashSet[string]]$diffKeys = $diff.RightOnly
     $diffKeys.UnionWith($diff.Changed)
-    [ParsedPackageRef[]]$diffPackages = @()
+    [List[ParsedPackageRef]]$diffPackages = [List[ParsedPackageRef]]::new($diffKeys.Count)
     foreach($key in $diffKeys) {
-        $diffPackages.Add($result.Packages[$key]) # TODO avoid array recreation with each Add()
+        $diffPackages.Add($result.Packages[$key])
     }
     [MergedPackageRef[]]$diffToplevel = [MergedPackageRef]::Create(($diffPackages | Where-Object RefType -EQ TopLevel))
     [MergedPackageRef[]]$diffTransitive = [MergedPackageRef]::Create(($diffPackages | Where-Object RefType -EQ Transitive))
@@ -121,17 +128,16 @@ if ($previousResult) {
 }
 
 if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel -or $transitive))) {
-    # TODO create issue
     $title = "New dependency problems"
     [System.Text.StringBuilder]$body = [System.Text.StringBuilder]::new()
     if ($diffToplevel -or $diffTransitive) {
         $null = $body.AppendLine('### New Dependency Problems')
-        if ($diffToplevel) { 
+        if ($diffToplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($diffToplevel, 'Package', 1, $true))
             $null = $body.AppendLine('</details>')
         }
-        if ($diffTransitive) { 
+        if ($diffTransitive) {
             $null = $body.AppendLine('<details><summary>Transitive Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($diffTransitive, 'Package', 1, $true))
             $null = $body.AppendLine('</details>')
@@ -139,12 +145,12 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
     }
     if ($toplevel -or $transitive) {
         $null = $body.AppendLine('### All Dependency Problems')
-        if ($toplevel) { 
+        if ($toplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($toplevel, 'Package', 1, $true))
             $null = $body.AppendLine('</details>')
         }
-        if ($transitive) { 
+        if ($transitive) {
             $null = $body.AppendLine('<details><summary>Transitive Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($transitive, 'Package', 1, $true))
             $null = $body.AppendLine('</details>')
