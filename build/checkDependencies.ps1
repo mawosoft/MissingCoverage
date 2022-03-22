@@ -8,7 +8,7 @@
     Runs all 'dotnet list package' reports and discovers new dependency problems by comparing
     the results to artifacts from previous workflow runs.The script will download the previous
     artifact, but the caller is responsible for uploading the new one.
-    Creates an issue, if new breaking changes have been found.
+    Creates an issue, if new dependency problems have been found.
 
 .OUTPUTS
     None. Sets workflow step outputs 'ArtifactName' and 'ArtifactPath' via workflow commands
