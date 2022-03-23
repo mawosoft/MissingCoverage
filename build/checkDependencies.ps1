@@ -135,12 +135,12 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
         if ($diffToplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($diffToplevel, 'Package', 1, $true))
-            $null = $body.AppendLine('</details>')
+            $null = $body.AppendLine('</details>').AppendLine()
         }
         if ($diffTransitive) {
             $null = $body.AppendLine('<details><summary>Transitive Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($diffTransitive, 'Package', 1, $true))
-            $null = $body.AppendLine('</details>')
+            $null = $body.AppendLine('</details>').AppendLine()
         }
     }
     if ($toplevel -or $transitive) {
@@ -148,12 +148,12 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
         if ($toplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($toplevel, 'Package', 1, $true))
-            $null = $body.AppendLine('</details>')
+            $null = $body.AppendLine('</details>').AppendLine()
         }
         if ($transitive) {
             $null = $body.AppendLine('<details><summary>Transitive Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($transitive, 'Package', 1, $true))
-            $null = $body.AppendLine('</details>')
+            $null = $body.AppendLine('</details>').AppendLine()
         }
     }
 
