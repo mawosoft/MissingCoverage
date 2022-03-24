@@ -6,10 +6,9 @@
     <CI Condition="'$(TF_BUILD)' == 'true' or '$(APPVEYOR)' != ''">true</CI>
   </PropertyGroup>
 
-  <!-- TFMs for main and test projects (local/CI) -->
+  <!-- TFMs for main and test projects -->
   <PropertyGroup>
-    <_MainTargetFrameworks>netcoreapp3.1;net5.0</_MainTargetFrameworks>
-    <_MainTargetFrameworks Condition="'$(CI)' == 'true'">netcoreapp3.1;net5.0;net6.0</_MainTargetFrameworks>
+    <_MainTargetFrameworks>netcoreapp3.1;net5.0;net6.0</_MainTargetFrameworks>
     <ContinuousIntegrationBuild>$(CI)</ContinuousIntegrationBuild>
     <Deterministic>$(CI)</Deterministic>
   </PropertyGroup>
