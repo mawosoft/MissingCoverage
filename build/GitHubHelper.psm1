@@ -14,7 +14,7 @@ $ErrorActionPreference = 'Stop'
 #   Gets the workflow id for a given run id
 function Get-WorkflowId {
     [CmdletBinding()]
-    [OutputType([int])]
+    [OutputType([long])]
     param (
         # Github repository as owner/repo
         [Parameter(Mandatory, Position = 0)]
@@ -24,7 +24,7 @@ function Get-WorkflowId {
         # Run Id number
         [Parameter(Mandatory, Position = 1)]
         [ValidateRange([System.Management.Automation.ValidateRangeKind]::Positive)]
-        [int]$RunId,
+        [long]$RunId,
 
         # GitHub token
         [Alias('t')]
