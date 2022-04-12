@@ -108,7 +108,8 @@ jobs:
       if: ${{ (matrix.os == 'ubuntu-latest' || strategy.job-total == 1) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
       run: |
         [string] $semver = '^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
-        $version = (select-xml -Path ./Directory.Build.props -XPath "//Version").Node.InnerText
+        $docElement = (select-xml -Path ./Directory.Build.props -XPath "/*").Node
+        $version = (select-xml -Xml $docElement -XPath "//ns:Version" -Namespace @{ ns = $docElement.NamespaceURI }).Node.InnerText
         if ($version -cnotmatch $semver)
         {
             throw "Invalid Version property."
