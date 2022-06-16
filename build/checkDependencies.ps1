@@ -128,7 +128,7 @@ if ($previousResult) {
 }
 
 if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel -or $transitive))) {
-    $title = "New dependency problems"
+    $title = 'Dependency Alert'
     [System.Text.StringBuilder]$body = [System.Text.StringBuilder]::new()
     if ($diffToplevel -or $diffTransitive) {
         $null = $body.AppendLine('### New Dependency Problems')
