@@ -107,31 +107,38 @@ function Find-ArtifactsFromPreviousRun {
         $auth.Authentication = 'Bearer'
         $auth.Token = $Token
     }
-
-    [string]$uri = "https://api.github.com/repos/$OwnerRepo/actions/workflows/$WorkflowId/runs"
-    $result = Invoke-RestMethod -Uri $uri @auth
-    $runs = $result.workflow_runs | Where-Object {
-        $_.run_number -le $MaxRunNumber -and $_.run_number -ge $MinRunNumber
-    } | Sort-Object -Property run_number -Descending
-    [int]$i = 0
-    for ([int]$runNumber = $MaxRunNumber; $runNumber -ge $MinRunNumber; $runNumber--) {
-        if ($i -ge ${runs}?.Count -or $runNumber -ne ${runs}?[$i].run_number) { break }
-        $retVal = GetArtifacts $runs[$i]
-        if ($retVal) { return $retVal }
-        $i++
+    $params = @{
+        Uri           = "https://api.github.com/repos/$OwnerRepo/actions/workflows/$WorkflowId/runs"
+        FollowRelLink = $false
     }
-    if ($runNumber -ge $MinRunNumber -and $result.total_count -gt $result.workflow_runs.Count) {
-        # Lessons in paranoid coding...
-        # Results returned by the GitHub REST API *seem* to always be in descending order, but the
-        # docs make no mention of it. In real life, traversing the first page of the results above
-        # is most likely enough when looking for the artifacts of the previous run.
-        # Only if that page had gaps in the run mumbers or not enough entries to get a hit, we will
-        # end up here to request all data.
-        Write-Verbose "Artifacts not found on first GitHub API result page. Retrieving all results."
-        $result = Invoke-RestMethod -Uri $uri -FollowRelLink @auth
-        $runs = $result.workflow_runs | Where-Object {
-            $_.run_number -le $runNumber -and $_.run_number -ge $MinRunNumber
-        } | Sort-Object -Property run_number -Descending
+
+    $result = Invoke-RestMethod @params @auth
+    [int]$runNumber = $MaxRunNumber
+    $runs = $result.workflow_runs | Where-Object {
+        $_.run_number -le $runNumber -and $_.run_number -ge $MinRunNumber
+    } | Sort-Object -Property run_number -Descending
+    foreach ($run in $runs) {
+        if ($runNumber -ne $run.run_number) { break }
+        $retVal = GetArtifacts $run
+        if ($retVal) { return $retVal }
+        $runNumber--
+    }
+
+    if ($runNumber -ge $MinRunNumber) {
+        if ($result.total_count -gt $result.workflow_runs.Count) {
+            # Lessons in paranoid coding...
+            # Results returned by the GitHub REST API *seem* to always be in descending order, but the
+            # docs make no mention of it. In real life, traversing the first page of the results above
+            # is most likely enough when looking for the artifacts of the previous run.
+            # Only if that page had gaps in the run mumbers and/or not enough entries to get a hit, we
+            # will end up here to request all data.
+            $params.FollowRelLink = $true
+            Write-Verbose "Artifacts not found on first GitHub API result page. Retrieving all results."
+            $result = Invoke-RestMethod @params @auth
+            $runs = $result.workflow_runs | Where-Object {
+                $_.run_number -le $runNumber -and $_.run_number -ge $MinRunNumber
+            } | Sort-Object -Property run_number -Descending
+        }
         foreach ($run in $runs) {
             $retVal = GetArtifacts $run
             if ($retVal) { return $retVal }
