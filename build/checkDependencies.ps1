@@ -11,8 +11,10 @@
     Creates an issue, if new dependency problems have been found.
 
 .OUTPUTS
-    None. Sets workflow step outputs 'ArtifactName' and 'ArtifactPath' via workflow commands
-    issued by Write-Host.
+    None. Sets the following workflow step output parameters via workflow commands issued by Write-Host.
+        ArtifactName - Artifact name for the result file to share between workflow runs.
+        ArtifactPath - Artifact path for the result file.
+        IssueNumber  - Issue with report of tool dependency problems.
 #>
 
 #Requires -Version 7
@@ -20,6 +22,7 @@
 using namespace System
 using namespace System.IO
 using namespace System.Collections.Generic
+using namespace System.Text
 using module ./ListPackageHelper.psm1
 using namespace ListPackageHelper
 
@@ -55,15 +58,12 @@ param (
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
-Import-Module "$PSScriptRoot/GitHubHelper.psm1" -Force
-
 # GitHub data about current workflow run and repository
-[long]$runId = $env:GITHUB_RUN_ID
-[int]$runNumber = $env:GITHUB_RUN_NUMBER
-[string]$ownerRepo = $env:GITHUB_REPOSITORY
-if (-not $runId -or -not $runNumber -or -not $ownerRepo) {
-    throw "GitHub environment variables are not defined."
+if (-not $env:GITHUB_RUN_ID -or -not $env:GITHUB_RUN_NUMBER -or -not $env:GITHUB_REPOSITORY) {
+    throw 'GitHub environment variables are not defined.'
 }
+
+Import-Module "$PSScriptRoot/GitHubHelper.psm1" -Force
 
 [ListPackageResult]$previousResult = $null
 [ListPackageResult]$result = $null
@@ -72,9 +72,10 @@ if (-not $runId -or -not $runNumber -or -not $ownerRepo) {
 [string]$artifactDirectory = Join-Path ([Path]::GetTempPath()) ([Path]::GetRandomFileName())
 [string]$artifactFile = Join-Path $artifactDirectory 'LastResult.json'
 $null = [Directory]::CreateDirectory($artifactDirectory)
+[int]$runNumber = $env:GITHUB_RUN_NUMBER
+[long]$workflowId = Get-WorkflowId $env:GITHUB_REPOSITORY $env:GITHUB_RUN_ID -Token $GitHubToken
 if ($runNumber -gt 1) {
-    [long]$workflowId = Get-WorkflowId $ownerRepo $runId -Token $GitHubToken
-    $artifacts = Find-ArtifactsFromPreviousRun $ownerRepo $ArtifactName -WorkflowId $workflowId `
+    $artifacts = Find-ArtifactsFromPreviousRun $env:GITHUB_REPOSITORY $ArtifactName -WorkflowId $workflowId `
         -MaxRunNumber ($runNumber - 1) -Token $GitHubToken
     if ($artifacts) {
         Write-Host "Found artifact '$ArtifactName' from workflow run #$(
@@ -92,6 +93,11 @@ finally {
     Write-Host '::endgroup::'
 }
 
+$result.ToJson($true) | Set-Content $artifactFile
+Write-Host "::set-output name=ArtifactName::$ArtifactName"
+Write-Host "::set-output name=ArtifactPath::$artifactFile"
+
+
 [MergedPackageRef[]]$toplevel = [MergedPackageRef]::Create(($result.Packages.Values | Where-Object RefType -EQ TopLevel))
 [MergedPackageRef[]]$transitive = [MergedPackageRef]::Create(($result.Packages.Values | Where-Object RefType -EQ Transitive))
 if ($toplevel -or $transitive) {
@@ -101,7 +107,7 @@ if ($toplevel -or $transitive) {
     Write-Host '::endgroup::'
 }
 else {
-    Write-Host "All results: No packages matching the given criteria have been found."
+    Write-Host 'All results: No packages matching the given criteria have been found.'
 }
 
 [MergedPackageRef[]]$diffToplevel = $null
@@ -111,7 +117,7 @@ if ($previousResult) {
     [HashSet[string]]$diffKeys = $diff.RightOnly
     $diffKeys.UnionWith($diff.Changed)
     [List[ParsedPackageRef]]$diffPackages = [List[ParsedPackageRef]]::new($diffKeys.Count)
-    foreach($key in $diffKeys) {
+    foreach ($key in $diffKeys) {
         $diffPackages.Add($result.Packages[$key])
     }
     [MergedPackageRef[]]$diffToplevel = [MergedPackageRef]::Create(($diffPackages | Where-Object RefType -EQ TopLevel))
@@ -123,15 +129,36 @@ if ($previousResult) {
         Write-Host '::endgroup::'
     }
     else {
-        Write-Host "New results: No new packages matching the given criteria have been found."
+        Write-Host 'New results: No new packages matching the given criteria have been found.'
     }
 }
 
+[List[string]]$notice = [List[string]]::new()
+if ($diffToplevel -or $diffTransitive) {
+    $notice.Add("New dependency problems: $(${diffToplevel}?.Count + 0)/$(${diffTransitive}?.Count + 0)")
+}
+if ($toplevel -or $transitive) {
+    $notice.Add("All dependency problems: $(${toplevel}?.Count + 0)/$(${transitive}?.Count + 0)")
+}
+
 if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel -or $transitive))) {
-    $title = 'Dependency Alert'
-    [System.Text.StringBuilder]$body = [System.Text.StringBuilder]::new()
+    [hashtable]$auth = @{
+        Authentication = 'Bearer'
+        Token          = $GitHubToken
+    }
+
+    [string]$uri = "https://api.github.com/repos/$($env:GITHUB_REPOSITORY)/actions/workflows/$workflowId"
+    $workflow = Invoke-RestMethod -Uri $uri @auth
+    $uri = "https://api.github.com/repos/$($env:GITHUB_REPOSITORY)/actions/runs/$($env:GITHUB_RUN_ID)"
+    $run = Invoke-RestMethod -Uri $uri @auth
+    # Note: $workflow.html_url points to the source file, not the overview of workflow runs.
+    [string]$urlWorkflowRuns = "https://github.com/$($env:GITHUB_REPOSITORY)/actions/workflows/$(Split-Path $workflow.path -Leaf)"
+
+    [StringBuilder]$body = [StringBuilder]::new()
+    $null = $body.AppendLine("Workflow [$($workflow.name)]($urlWorkflowRuns) Run [#$($run.run_number)]($($run.html_url))").AppendLine()
+
     if ($diffToplevel -or $diffTransitive) {
-        $null = $body.AppendLine('### New Dependency Problems')
+        $null = $body.AppendLine("### New Dependency Problems ($(${diffToplevel}?.Count + 0)/$(${diffTransitive}?.Count + 0))")
         if ($diffToplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($diffToplevel, 'Package', 1, $true))
@@ -144,7 +171,7 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
         }
     }
     if ($toplevel -or $transitive) {
-        $null = $body.AppendLine('### All Dependency Problems')
+        $null = $body.AppendLine("### All Dependency Problems ($(${toplevel}?.Count + 0)/$(${transitive}?.Count + 0))")
         if ($toplevel) {
             $null = $body.AppendLine('<details><summary>Top-level Packages</summary>').AppendLine()
             $null = $body.AppendLine([MergedPackageRef]::FormatMarkdownHtmlTable($toplevel, 'Package', 1, $true))
@@ -158,16 +185,17 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
     }
 
     [hashtable]$params = @{
-        title = $title
+        title = 'Dependency Alert'
         body  = $body.ToString()
     }
     if ($IssueLabels) { $params.labels = $IssueLabels }
-    $issue = $params | ConvertTo-Json | Invoke-RestMethod -Uri "https://api.github.com/repos/$ownerRepo/issues" `
-        -Method Post -Authentication Bearer -Token $token
-    Write-Host "Created issue #$($issue.number)"
+    $uri = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/issues"
+    $issue = $params | ConvertTo-Json -EscapeHandling EscapeNonAscii | Invoke-RestMethod -Uri $uri -Method Post @auth
+    Write-Host "::set-output name=IssueNumber::$($issue.number)"
+    $notice.Add("Created Dependency Alert. Issue #$($issue.number): $($issue.html_url)")
 }
-
-$result.ToJson($true) | Set-Content $artifactFile
-
-Write-Host "::set-output name=ArtifactName::$ArtifactName"
-Write-Host "::set-output name=ArtifactPath::$artifactFile"
+if ($notice.Count -gt 0) {
+    # Note: While %0A will appear as newline in the console log,
+    # the annotation in the workflw run summary will just be a single line.
+    Write-Host "::notice::$($notice -join '%0A')"
+}
