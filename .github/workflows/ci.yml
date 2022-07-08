@@ -26,10 +26,8 @@ on:
         type: boolean
   push:
     branches: master
-    paths-ignore: [README.md, assets/**, tests/benchmarks/** ]
   pull_request:
     branches: master
-    paths-ignore: [README.md, assets/**, tests/benchmarks/** ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -74,29 +72,32 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Setup DotNet
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: |
-          3.1.x
-          5.0.x
-          6.0.x
     - name: DotNet Info
       run: dotnet --info
+    - name: DotNet Setup
+      if: ${{ matrix.os == 'macos-latest' }}
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x      
+    - name: DotNet Info
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: dotnet --info
     - name: Build
+      env:
+        MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
       run: |
         . ./build/startNativeExecution.ps1
         Set-Alias exec Start-NativeExecution
-        exec { dotnet restore -bl:./Binlogs/restore.binlog }
-        exec { dotnet build -c Debug --no-restore -bl:./Binlogs/build_debug.binlog }
-        exec { dotnet build -c Release --no-restore -bl:./Binlogs/build_release.binlog }
-        exec { dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages -bl:./Binlogs/pack.binlog }
+        exec { dotnet restore }
+        exec { dotnet build -c Debug --no-restore }
+        exec { dotnet build -c Release --no-restore }
+        exec { dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages }
     - name: Upload Binlogs
       if: ${{ failure() || github.event_name == 'workflow_dispatch' }}
       uses: actions/upload-artifact@v2
       with:
         name: ${{ matrix.os }}-Binlogs
-        path: ./Binlogs/
+        path: '**/MSBuild_Logs/*'
     - name: Upload Packages
       if: ${{ matrix.os == 'ubuntu-latest' || strategy.job-total == 1 }}
       uses: actions/upload-artifact@v2

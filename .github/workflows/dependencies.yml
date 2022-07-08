@@ -20,12 +20,12 @@ jobs:
     - name: dotnet Version
       run: dotnet --version
     - name: Restore
-      run: dotnet restore
+      run: |
+        . ./build/startNativeExecution.ps1
+        Start-NativeExecution { dotnet restore }
     - name: Check dependencies
       id: dependencies
-      run: |
-        $token = ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText
-        ./build/checkDependencies.ps1 -Token $token
+      run: ./build/checkDependencies.ps1 -Token (ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText)
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:

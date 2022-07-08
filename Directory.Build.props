@@ -13,10 +13,13 @@
     <Deterministic>$(CI)</Deterministic>
   </PropertyGroup>
 
-<PropertyGroup>
+  <PropertyGroup>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Regression in .NET SDK 6.0.300 when using Central Package Management:
+         NU1507 if multiple feeds are used without package source mapping. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,4 +33,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
   </ItemGroup>
+
 </Project>
