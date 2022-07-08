@@ -8,7 +8,7 @@
 
   <!-- TFMs for main and test projects -->
   <PropertyGroup>
-    <_MainTargetFrameworks>netcoreapp3.1;net5.0;net6.0</_MainTargetFrameworks>
+    <_MainTargetFrameworks>netcoreapp3.1;net6.0</_MainTargetFrameworks>
     <ContinuousIntegrationBuild>$(CI)</ContinuousIntegrationBuild>
     <Deterministic>$(CI)</Deterministic>
   </PropertyGroup>
