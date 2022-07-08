@@ -25,6 +25,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Override transitive vulnerabilities -->
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NETStandard.Library" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Mawosoft.MissingCoverage\Mawosoft.MissingCoverage.csproj" />
   </ItemGroup>
