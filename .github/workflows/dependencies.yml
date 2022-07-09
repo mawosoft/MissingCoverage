@@ -22,10 +22,10 @@ jobs:
     - name: Restore
       run: |
         . ./build/startNativeExecution.ps1
-        Start-NativeExecution { dotnet restore }
+        Start-NativeExecution { dotnet restore ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj }
     - name: Check dependencies
       id: dependencies
-      run: ./build/checkDependencies.ps1 -Token (ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText)
+      run: ./build/checkDependencies.ps1 -p ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj, ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -Token (ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText)
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
