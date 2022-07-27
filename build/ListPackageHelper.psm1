@@ -597,12 +597,12 @@ class ListPackageResult {
         if ($lines.Peek() -cnotmatch '^   \[(?<framework>[^\]]+)\]: (?<message>.*)') {
             throw "First line is not a framework line: $($lines.Peek())"
         }
-        $lines.Dequeue()
         [string]$framework = $Matches['framework']
         if ($Matches['message']) {
             $this.Messages.Add($lines.Dequeue().Trim())
             return
         }
+        $lines.Dequeue()
         while ($lines.Count -ne 0 -and $lines.Peek() -cmatch '^   Top-level|^   Transitive') {
             [ParsedColumnInfo]$columnInfo = [ParsedColumnInfo]::new($lines.Dequeue())
             while ($lines.Count -ne 0 -and $lines.Peek().StartsWith('   > ')) {
@@ -670,7 +670,12 @@ function Invoke-ListPackage {
             ('--outdated', '--include-transitive'),
             ('--vulnerable', '--include-transitive'),
             ('--deprecated', '--include-transitive')
-        )
+        ),
+
+        # Remove transitive packages that are only marked as outdated, but not
+        # vulnerable or deprecated.
+        [Alias('r')]
+        [switch]$RemoveTransitiveIfOutdatedOnly
     )
 
     [ListPackageResult]$allResults = [ListPackageResult]::new()
@@ -702,6 +707,14 @@ function Invoke-ListPackage {
                     $output | Write-Information
                 }
             }
+        }
+    }
+    if ($RemoveTransitiveIfOutdatedOnly) {
+        [string[]]$keys = ($allResults.Packages.GetEnumerator() | Where-Object {
+                $_.Value.RefType -eq [PackageRefType]::Transitive -and $_.Value.ReportTypes -eq [ReportTypes]::Outdated
+            })?.Key
+        foreach ($key in $keys) {
+            $null = $allResults.Packages.Remove($key)
         }
     }
     return $allResults
