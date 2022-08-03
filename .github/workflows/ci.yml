@@ -74,14 +74,6 @@ jobs:
         fetch-depth: 0
     - name: DotNet Info
       run: dotnet --info
-    - name: DotNet Setup
-      if: ${{ matrix.os == 'macos-latest' }}
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: 6.0.x      
-    - name: DotNet Info
-      if: ${{ matrix.os == 'macos-latest' }}
-      run: dotnet --info
     - name: Build
       env:
         MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
