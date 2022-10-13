@@ -27,7 +27,7 @@ jobs:
       id: dependencies
       run: ./build/checkDependencies.ps1 -p ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj, ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -Token (ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText)
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.dependencies.outputs.ArtifactName }}
         path: ${{ steps.dependencies.outputs.ArtifactPath }}

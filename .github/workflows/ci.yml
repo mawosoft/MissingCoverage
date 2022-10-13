@@ -86,13 +86,13 @@ jobs:
         exec { dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages }
     - name: Upload Binlogs
       if: ${{ failure() || github.event_name == 'workflow_dispatch' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}-Binlogs
         path: '**/MSBuild_Logs/*'
     - name: Upload Packages
       if: ${{ matrix.os == 'ubuntu-latest' || strategy.job-total == 1 }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Packages
         path: ./Packages/
@@ -125,7 +125,7 @@ jobs:
       run: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f netcoreapp3.1, net6.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
     - name: Upload Test results
       if: ${{ always() && steps.test.outcome != 'skipped' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}-Testresults
         path: ./TestResults/
