@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
@@ -32,7 +33,7 @@ namespace LineInfoBenchmarks
 
         public bool SeparateLogicalGroups => _inner.SeparateLogicalGroups;
 
-        public IEnumerable<BenchmarkCase> GetExecutionOrder(ImmutableArray<BenchmarkCase> benchmarksCase) => _inner.GetExecutionOrder(benchmarksCase);
+        public IEnumerable<BenchmarkCase> GetExecutionOrder(ImmutableArray<BenchmarkCase> benchmarksCase, IEnumerable<BenchmarkLogicalGroupRule> order) => _inner.GetExecutionOrder(benchmarksCase, order);
         public string GetHighlightGroupKey(BenchmarkCase benchmarkCase)
             => benchmarkCase.Parameters.Items.FirstOrDefault(
                    p => p.Name.Equals("group", StringComparison.OrdinalIgnoreCase))?.Value?.ToString()
@@ -43,7 +44,7 @@ namespace LineInfoBenchmarks
                    p => p.Name.Equals("group", StringComparison.OrdinalIgnoreCase))?.Value?.ToString()
                ?? _inner.GetLogicalGroupKey(allBenchmarksCases, benchmarkCase);
 
-        public IEnumerable<IGrouping<string, BenchmarkCase>> GetLogicalGroupOrder(IEnumerable<IGrouping<string, BenchmarkCase>> logicalGroups) => _inner.GetLogicalGroupOrder(logicalGroups);
+        public IEnumerable<IGrouping<string, BenchmarkCase>> GetLogicalGroupOrder(IEnumerable<IGrouping<string, BenchmarkCase>> logicalGroups, IEnumerable<BenchmarkLogicalGroupRule> order) => _inner.GetLogicalGroupOrder(logicalGroups, order);
         public IEnumerable<BenchmarkCase> GetSummaryOrder(ImmutableArray<BenchmarkCase> benchmarksCases, Summary summary) => _inner.GetSummaryOrder(benchmarksCases, summary);
     }
 }
