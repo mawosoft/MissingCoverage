@@ -19,13 +19,29 @@ pool:
 
 variables:
   disable.coverage.autogenerate: true
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 steps:
 - checkout: self
+- pwsh: dotnet --info
+  displayName: DotNet Info
 - pwsh: |
     . ./build/startNativeExecution.ps1
     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
   displayName: Build
+  env:
+    MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
+    # Fix incomplete binlogs in MSBuild <=17.3.x. See https://github.com/mawosoft/Mawosoft.Extensions.BenchmarkDotNet/issues/146
+    MSBUILDLOGTASKINPUTS: 1
+    MSBUILDTARGETOUTPUTLOGGING: true
+    MSBUILDLOGIMPORTS: 1
+    MSBUILDLOGALLENVIRONMENTVARIABLES: true
+- publish: ./MSBuild_Logs
+  condition: succeededOrFailed()
+  artifact: azp-Binlogs
+  displayName: Upload Binlogs
 - pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
   displayName: Test
 - task: reportgenerator@5

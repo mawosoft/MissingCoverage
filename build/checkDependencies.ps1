@@ -59,7 +59,8 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 # GitHub data about current workflow run and repository
-if (-not $env:GITHUB_RUN_ID -or -not $env:GITHUB_RUN_NUMBER -or -not $env:GITHUB_REPOSITORY) {
+if (-not $env:GITHUB_RUN_ID -or -not $env:GITHUB_RUN_NUMBER -or
+    -not $env:GITHUB_REPOSITORY -or -not $env:GITHUB_OUTPUT) {
     throw 'GitHub environment variables are not defined.'
 }
 
@@ -94,9 +95,8 @@ finally {
 }
 
 $result.ToJson($true) | Set-Content $artifactFile
-Write-Host "::set-output name=ArtifactName::$ArtifactName"
-Write-Host "::set-output name=ArtifactPath::$artifactFile"
-
+Write-Output "ArtifactName=$ArtifactName" >>$env:GITHUB_OUTPUT
+Write-Output "ArtifactPath=$artifactFile" >>$env:GITHUB_OUTPUT
 
 [MergedPackageRef[]]$toplevel = [MergedPackageRef]::Create(($result.Packages.Values | Where-Object RefType -EQ TopLevel))
 [MergedPackageRef[]]$transitive = [MergedPackageRef]::Create(($result.Packages.Values | Where-Object RefType -EQ Transitive))
@@ -191,7 +191,7 @@ if ($diffToplevel -or $diffTransitive -or (-not $previousResult -and ($toplevel 
     if ($IssueLabels) { $params.labels = $IssueLabels }
     $uri = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/issues"
     $issue = $params | ConvertTo-Json -EscapeHandling EscapeNonAscii | Invoke-RestMethod -Uri $uri -Method Post @auth
-    Write-Host "::set-output name=IssueNumber::$($issue.number)"
+    Write-Output "IssueNumber=$($issue.number)" >>$env:GITHUB_OUTPUT
     $notice.Add("Created Dependency Alert. Issue #$($issue.number): $($issue.html_url)")
 }
 if ($notice.Count -gt 0) {
