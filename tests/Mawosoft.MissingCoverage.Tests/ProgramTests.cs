@@ -107,8 +107,7 @@ namespace Mawosoft.MissingCoverage.Tests
         public void WriteFileError_WithXmlException_WritesLineInfo()
         {
             RedirectWrapper wrapper = new();
-            // COMPAT net31 doesn't use default message if null.
-            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException("Xml error.", null, 7, 20)));
+            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException(null, null, 7, 20)));
             string filePath = "somedir/somefile.cs";
             wrapper.Program.WriteFileError(filePath, ex);
             AssertAppTitle(wrapper);
@@ -121,8 +120,7 @@ namespace Mawosoft.MissingCoverage.Tests
         public void WriteFileError_WithoutFilePath_WritesToolError()
         {
             RedirectWrapper wrapper = new();
-            // COMPAT net31 doesn't use default message if null.
-            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException("Xml error.", null, 7, 20)));
+            Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException(null, null, 7, 20)));
             wrapper.Program.WriteFileError(null!, ex);
             AssertAppTitle(wrapper);
             string expected = "MissingCoverage : error MC9000: " + ex.Message;

@@ -37,9 +37,8 @@ namespace Mawosoft.MissingCoverage.Tests
             node = null; // Track current node for exceptions not thrown explicitly
             try
             {
-                foreach (XPathNavigator? source in navi.Select("/coverage/sources/source"))
+                foreach (XPathNavigator source in navi.Select("/coverage/sources/source"))
                 {
-                    if (source == null) continue; // COMPAT net31
                     node = source;
                     if (source.Value.Length > 0)
                     {
@@ -56,9 +55,8 @@ namespace Mawosoft.MissingCoverage.Tests
                 }
                 node = null;
 
-                foreach (XPathNavigator? @class in navi.Select(xpathClasses))
+                foreach (XPathNavigator @class in navi.Select(xpathClasses))
                 {
-                    if (@class == null) continue; // COMPAT net31
                     node = @class;
                     string fileName = @class.GetAttribute("filename", "");
                     if (fileName.Length == 0)
@@ -73,9 +71,8 @@ namespace Mawosoft.MissingCoverage.Tests
                     }
                     SourceFileInfo sourceFileInfo = new(fileName, reportTimestamp);
 
-                    foreach (XPathNavigator? line in @class.Select("lines/line"))
+                    foreach (XPathNavigator line in @class.Select("lines/line"))
                     {
-                        if (line == null) continue; // COMPAT net31
                         node = line;
                         LineInfo lineInfo = default;
                         if (!int.TryParse(line.GetAttribute("number", ""), out int lineNumber) || lineNumber < 1)
@@ -121,9 +118,6 @@ namespace Mawosoft.MissingCoverage.Tests
                     lineNumber = lineInfo.LineNumber;
                     linePosition = lineInfo.LinePosition;
                 }
-#if !NET5_0_OR_GREATER
-                message ??= "XML error."; // COMPAT net31 doesn't use default message if null.
-#endif
                 throw new XmlException(message, innerException, lineNumber, linePosition);
             }
         }
