@@ -313,9 +313,6 @@ namespace Mawosoft.MissingCoverage
                 lineNumber = xmlLineInfo.LineNumber;
                 linePosition = xmlLineInfo.LinePosition;
             }
-#if !NET5_0_OR_GREATER
-            message ??= "XML error."; // COMPAT net31 doesn't use default message if null.
-#endif
             throw new XmlException(message, innerException, lineNumber, linePosition);
         }
     }
