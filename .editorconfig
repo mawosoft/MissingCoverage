@@ -173,7 +173,7 @@ dotnet_code_quality.CA1822.api_surface = private, internal
 dotnet_code_quality.CA2208.api_surface = public
 
 # License header
-file_header_template = Copyright (c) 2021-2022 Matthias Wolf, Mawosoft.
+file_header_template = Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 # C++ Files
 [*.{cpp,h,in}]
