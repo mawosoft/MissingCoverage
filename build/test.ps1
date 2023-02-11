@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Matthias Wolf, Mawosoft.
+# Copyright (c) 2022-2023 Matthias Wolf, Mawosoft.
 
 # Run dotnet test for projects * configs * frameworks
 
@@ -91,15 +91,17 @@ foreach ($project in $Projects) {
             if (-not $Build.IsPresent) {
                 $params += "--no-build"
             }
-            $params += "-c", $config
-            $params += "-f", $framework
-            $params += "-l", "`"console;verbosity=$Verbosity`""
-            $params += "-r", "`"$currentResultsDirectory`""
-            $params += "-l", "trx"
+            # Dont't use aliases like -r, they could change (-r is now --runtime in SDK >= 7.0)
+            # See https://github.com/dotnet/sdk/issues/21952
+            $params += "--configuration", $config
+            $params += "--framework", $framework
+            $params += "--logger", "`"console;verbosity=$Verbosity`""
+            $params += "--results-directory", "`"$currentResultsDirectory`""
+            $params += "--logger", "trx"
             if ($CodeCoverage.IsPresent -or $Settings -ne "") {
                 $params += "--collect", "`"XPlat Code Coverage`""
                 if ($Settings -ne "") {
-                    $params += "-s", "`"$Settings`""
+                    $params += "--settings", "`"$Settings`""
                 }
             }
             $params += "--diag", "`"$(Join-Path $currentResultsDirectory "diag.log")`""

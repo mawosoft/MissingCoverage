@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(_MainTargetFrameworks)</TargetFrameworks>
     <OutputType>Exe</OutputType>
+    <RollForward>Major</RollForward>
     <NeutralLanguage>en-US</NeutralLanguage>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>

@@ -20,17 +20,14 @@
     <!-- Pinning still has some kinks. See https://github.com/NuGet/Home/issues/11952 -->
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <TreatWarningsAsErrors>$(CI)</TreatWarningsAsErrors>
-    <!-- Regression in .NET SDK 6.0.300 when using Central Package Management:
-         NU1507 if multiple feeds are used without package source mapping. -->
-    <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>Matthias Wolf</Authors>
     <Company>Mawosoft</Company>
     <Product>Mawosoft.MissingCoverage</Product>
-    <Copyright>Copyright (c) 2021-2022 Matthias Wolf, Mawosoft</Copyright>
-    <Version>0.9.2-dev</Version>
+    <Copyright>Copyright (c) 2021-2023 Matthias Wolf, Mawosoft</Copyright>
+    <Version>0.9.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
