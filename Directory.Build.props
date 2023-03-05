@@ -27,7 +27,7 @@
     <Company>Mawosoft</Company>
     <Product>Mawosoft.MissingCoverage</Product>
     <Copyright>Copyright (c) 2021-2023 Matthias Wolf, Mawosoft</Copyright>
-    <Version>0.9.2</Version>
+    <Version>0.9.3-dev</Version>
   </PropertyGroup>
 
   <ItemGroup>
