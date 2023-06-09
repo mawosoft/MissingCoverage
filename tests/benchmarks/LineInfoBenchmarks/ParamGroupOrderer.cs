@@ -34,12 +34,12 @@ namespace LineInfoBenchmarks
         public bool SeparateLogicalGroups => _inner.SeparateLogicalGroups;
 
         public IEnumerable<BenchmarkCase> GetExecutionOrder(ImmutableArray<BenchmarkCase> benchmarksCase, IEnumerable<BenchmarkLogicalGroupRule> order) => _inner.GetExecutionOrder(benchmarksCase, order);
-        public string GetHighlightGroupKey(BenchmarkCase benchmarkCase)
+        public string? GetHighlightGroupKey(BenchmarkCase benchmarkCase)
             => benchmarkCase.Parameters.Items.FirstOrDefault(
                    p => p.Name.Equals("group", StringComparison.OrdinalIgnoreCase))?.Value?.ToString()
                ?? _inner.GetHighlightGroupKey(benchmarkCase);
 
-        public string GetLogicalGroupKey(ImmutableArray<BenchmarkCase> allBenchmarksCases, BenchmarkCase benchmarkCase)
+        public string? GetLogicalGroupKey(ImmutableArray<BenchmarkCase> allBenchmarksCases, BenchmarkCase benchmarkCase)
             => benchmarkCase.Parameters.Items.FirstOrDefault(
                    p => p.Name.Equals("group", StringComparison.OrdinalIgnoreCase))?.Value?.ToString()
                ?? _inner.GetLogicalGroupKey(allBenchmarksCases, benchmarkCase);
