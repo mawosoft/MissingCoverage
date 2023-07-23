@@ -29,8 +29,7 @@ namespace Mawosoft.MissingCoverage.Tests
 
             public void Value_Roundtrip(T value)
             {
-                OptionValue<T> v = new();
-                v.Value = value;
+                OptionValue<T> v = new() { Value = value };
                 Assert.Equal(value, v.Value);
                 Assert.True(v.IsSet);
                 v.Value = default!;
@@ -49,8 +48,7 @@ namespace Mawosoft.MissingCoverage.Tests
 
             public void ImplicitOperator_T(T value)
             {
-                OptionValue<T> v = new();
-                v.Value = value;
+                OptionValue<T> v = new() { Value = value };
                 T result = v;
                 Assert.Equal(value, result);
                 v = new(value);
@@ -135,7 +133,7 @@ namespace Mawosoft.MissingCoverage.Tests
                     }
                     else
                     {
-                        Assert.True(false, $"TypeAndValue_TheoryData missing for type {type.Name}.");
+                        Assert.Fail($"TypeAndValue_TheoryData missing for type {type.Name}.");
                     }
 
                 }

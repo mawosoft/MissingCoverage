@@ -11,10 +11,10 @@ namespace Mawosoft.MissingCoverage
         private const uint HitsMask = int.MaxValue;
         private const uint LineFlag = ~HitsMask;
         private uint _hits;
-        public bool IsLine => (_hits & LineFlag) != 0;
+        public readonly bool IsLine => (_hits & LineFlag) != 0;
         public int Hits
         {
-            get => (int)(_hits & HitsMask);
+            readonly get => (int)(_hits & HitsMask);
             set
             {
                 if (value >= 0)
@@ -62,19 +62,19 @@ namespace Mawosoft.MissingCoverage
             }
         }
 
-        public override string ToString()
+        public override readonly string ToString()
             => Hits.ToString() + (IsLine ? string.Empty : "?")
                + (CoveredBranches != 0 || TotalBranches != 0
                   ? $" ({CoveredBranches}/{TotalBranches})"
                   : string.Empty);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(LineInfo other)
+        public readonly bool Equals(LineInfo other)
             => _hits == other._hits
                && TotalBranches == other.TotalBranches
                && CoveredBranches == other.CoveredBranches;
 
-        public override bool Equals([NotNullWhen(true)] object? obj) => obj is LineInfo line && Equals(line);
-        public override int GetHashCode() => HashCode.Combine(_hits, CoveredBranches, TotalBranches);
+        public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is LineInfo line && Equals(line);
+        public override readonly int GetHashCode() => HashCode.Combine(_hits, CoveredBranches, TotalBranches);
     }
 }
