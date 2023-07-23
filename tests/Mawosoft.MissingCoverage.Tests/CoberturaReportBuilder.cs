@@ -200,10 +200,11 @@ namespace Mawosoft.MissingCoverage.Tests
                 FirstInvalidElement = @class;
                 resolvedFileName = null;
             }
-            else if (resolvedFileName == null)
+            else
             {
-                resolvedFileName = fileName;
+                resolvedFileName ??= fileName;
             }
+
             XElement lines = new("lines");
             @class.Add(new XAttribute("line-rate", "0.9"),
                        new XAttribute("branch-rate", "0.8"),
@@ -429,7 +430,7 @@ namespace Mawosoft.MissingCoverage.Tests
             return classes;
         }
 
-        [return: NotNullIfNotNull("path")]
+        [return: NotNullIfNotNull(nameof(path))]
         private static string? Normalize(string? path)
         {
             if (path == null)

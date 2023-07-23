@@ -77,7 +77,7 @@ namespace Mawosoft.MissingCoverage.Tests
                         AssertOut(wrapper, normal + Environment.NewLine + detailed);
                         break;
                     default:
-                        Assert.True(false, $"Unexpected VerbosityLevel: {verbosity}");
+                        Assert.Fail($"Unexpected VerbosityLevel: {verbosity}");
                         break;
                 };
                 Assert.Empty(wrapper.Lines);
@@ -92,7 +92,7 @@ namespace Mawosoft.MissingCoverage.Tests
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 Exception ex = Assert.ThrowsAny<Exception>(
-                    static () => throw new InvalidOperationException("My message"));
+                    (Action)(static () => throw new InvalidOperationException("My message")));
                 string filePath = "somedir/somefile.cs";
                 wrapper.Program.WriteFileError(filePath, ex);
                 AssertAppTitle(wrapper);
@@ -136,7 +136,7 @@ namespace Mawosoft.MissingCoverage.Tests
                 RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 Exception ex = Assert.ThrowsAny<Exception>(
-                    static () => throw new InvalidOperationException("My message"));
+                    (Action)(static () => throw new InvalidOperationException("My message")));
                 wrapper.Program.WriteToolError(ex);
                 AssertAppTitle(wrapper);
                 string expected = "MissingCoverage : error MC9000: ";

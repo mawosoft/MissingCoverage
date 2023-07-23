@@ -81,10 +81,7 @@ namespace System.IO
                 if (pos >= 0) pos++; // Substring will throw if pos < 0
                 basePath = Path.GetDirectoryName(basePath.Substring(pos)) ?? string.Empty;
                 string? rootPath = GetCIDirectory();
-                if (rootPath == null)
-                {
-                    rootPath = GetGitDirectory() ?? string.Empty;
-                }
+                rootPath ??= GetGitDirectory() ?? string.Empty;
                 basePath = Path.Combine(rootPath, basePath);
             }
             else

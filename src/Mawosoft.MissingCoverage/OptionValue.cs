@@ -8,7 +8,7 @@ namespace Mawosoft.MissingCoverage
 
         public T Value
         {
-            get => _value;
+            readonly get => _value;
             set
             {
                 _value = value;
@@ -24,7 +24,7 @@ namespace Mawosoft.MissingCoverage
             IsSet = false;
         }
 
-        public override string ToString() => _value?.ToString() + (IsSet ? "!" : "");
+        public override readonly string ToString() => _value?.ToString() + (IsSet ? "!" : "");
 
         public static implicit operator T(OptionValue<T> @this) => @this.Value;
         public static implicit operator OptionValue<T>(T value) => new() { Value = value };
