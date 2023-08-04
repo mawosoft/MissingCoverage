@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
-        public void ctor_InvalidSourceFilePath_Throws(string sourceFilePath)
+        public void Ctor_InvalidSourceFilePath_Throws(string sourceFilePath)
         {
             ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
                 () => _ = new SourceFileInfo(sourceFilePath, DateTime.UtcNow));
@@ -34,7 +34,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData("somefile")]
         [InlineData(@"c:\somedir\somefile.cs")]
         [InlineData("/home/somedir/somefile")]
-        public void ctor_ValidSourceFilePath_Succeeds(string sourceFilePath)
+        public void Ctor_ValidSourceFilePath_Succeeds(string sourceFilePath)
         {
             DateTime initialStamp = DateTime.UtcNow;
             SourceFileInfo info = new(sourceFilePath, initialStamp);

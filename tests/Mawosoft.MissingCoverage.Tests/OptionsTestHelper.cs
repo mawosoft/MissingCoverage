@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -105,6 +105,7 @@ namespace Mawosoft.MissingCoverage.Tests
         public static string[] SplitArguments(string argumentLine)
             => argumentLine.Split(Array.Empty<char>(), StringSplitOptions.RemoveEmptyEntries);
 
+        [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Defies code logic.")]
         public static string ToMixedCase(string s, int start = 1)
         {
             Span<char> chars = s.ToLowerInvariant().ToCharArray();

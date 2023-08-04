@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 // Based on:
 // - Mawosoft.ImdbScrape.Http.Tests.MockCacheDirectory
@@ -10,7 +10,10 @@ using System.IO;
 
 namespace Mawosoft.MissingCoverage.Tests
 {
-    public class TempDirectory : IDisposable
+
+#pragma warning disable CA1031 // Do not catch general exception types
+
+    public sealed class TempDirectory : IDisposable
     {
         public string FullPath { get; }
         public bool AutoDelete { get; set; }

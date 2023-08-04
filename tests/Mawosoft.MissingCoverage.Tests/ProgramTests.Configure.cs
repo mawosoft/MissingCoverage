@@ -1,5 +1,6 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
+using System;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -14,18 +15,18 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void Configure_StopsOnException_SetsShowHelpOnly()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Configure(SplitArguments("--badarg"));
             Assert.True(wrapper.Program.Options.ShowHelpOnly);
             AssertAppTitle(wrapper);
             Assert.NotEmpty(wrapper.Lines);
-            Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>")));
+            Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>", StringComparison.Ordinal)));
         }
 
         [Fact]
         public void Configure_AddsDefaultGlobPattern()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Configure(SplitArguments("--nologo"));
             Assert.Equal(Path.Combine("**", "*cobertura*.xml"),
                          Assert.Single(wrapper.Program.Options.GlobPatterns));
@@ -43,7 +44,7 @@ namespace Mawosoft.MissingCoverage.Tests
             try
             {
                 Assert.NotEqual(100_000, SourceFileInfo.MaxLineNumber);
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Configure(SplitArguments("--nologo --max-linenumber 100000"));
                 Assert.Equal(100_000, SourceFileInfo.MaxLineNumber);
                 wrapper.Close();

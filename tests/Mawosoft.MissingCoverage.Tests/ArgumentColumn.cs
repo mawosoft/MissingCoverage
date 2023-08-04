@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -136,9 +136,9 @@ namespace Mawosoft.MissingCoverage.Tests
                 new[] { prefixedAliases.Count, delimiters.Count(), valuesAndTexts.Count }.Max();
 
             List<ArgumentCell> cells = new();
-            RingEnumerator<string> aliasEnumerator = new(prefixedAliases);
-            RingEnumerator<string> delimiterEnumerator = new(delimiters);
-            RingEnumerator<(string, object?)> valueAndTextEnumerator = new(valuesAndTexts);
+            using RingEnumerator<string> aliasEnumerator = new(prefixedAliases);
+            using RingEnumerator<string> delimiterEnumerator = new(delimiters);
+            using RingEnumerator<(string, object?)> valueAndTextEnumerator = new(valuesAndTexts);
 
             for (int i = 0; i < maxMutations; i++)
             {

@@ -16,7 +16,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void Run_HelpArgument_WritesHelp()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             int exitCode = wrapper.Program.Run(SplitArguments("--help"));
             Assert.Equal(0, exitCode);
             AssertAppTitle(wrapper);
@@ -24,29 +24,29 @@ namespace Mawosoft.MissingCoverage.Tests
             AssertOut(wrapper, "Usage: MissingCoverage [options] [filespecs]");
             AssertOut(wrapper, string.Empty);
             AssertOut(wrapper, "Options:");
-            Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>")));
+            Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>", StringComparison.Ordinal)));
         }
 
         [Fact]
         public void Run_InvalidArgument_WritesHelp()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             int exitCode = wrapper.Program.Run(SplitArguments("--badarg"));
             Assert.Equal(1, exitCode);
             AssertAppTitle(wrapper);
-            Assert.StartsWith("2>MissingCoverage : error MC9000: ", wrapper.Lines.FirstOrDefault());
+            Assert.StartsWith("2>MissingCoverage : error MC9000: ", wrapper.Lines.FirstOrDefault(), StringComparison.Ordinal);
             wrapper.Lines.RemoveAt(0);
             AssertOut(wrapper, string.Empty);
             AssertOut(wrapper, "Usage: MissingCoverage [options] [filespecs]");
             AssertOut(wrapper, string.Empty);
             AssertOut(wrapper, "Options:");
-            Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>")));
+            Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>", StringComparison.Ordinal)));
         }
 
         [Fact]
         public void Run_AnyException_WritesToolError()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             int exitCode = wrapper.Program.Run(SplitArguments("-v:m thisglobdoesntmatch.anything"));
             Assert.Equal(1, exitCode);
             AssertAppTitle(wrapper);
@@ -59,14 +59,14 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             using TempDirectory tempDirectory = new();
             List<string> files = CreateMinimalReportFiles(tempDirectory, 1);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             int exitCode = wrapper.Program.Run(new string[] { files[0] });
             Assert.Equal(0, exitCode);
             AssertAppTitle(wrapper);
             AssertInputTitle(wrapper);
             AssertOut(wrapper, files[0]);
             AssertResultTitle(wrapper);
-            Assert.Contains("warning MC", wrapper.Lines.FirstOrDefault());
+            Assert.Contains("warning MC", wrapper.Lines.FirstOrDefault(), StringComparison.Ordinal);
             wrapper.Lines.RemoveAt(0);
             Assert.Empty(wrapper.Lines);
         }
@@ -86,8 +86,8 @@ namespace Mawosoft.MissingCoverage.Tests
             try
             {
                 Directory.SetCurrentDirectory(TestDataDirectory.GetTestDataDirectory());
-                StringWriter output = new();
-                StringWriter error = new();
+                using StringWriter output = new();
+                using StringWriter error = new();
                 Console.SetOut(output);
                 Console.SetError(error);
                 int exitCode = Program.Main(new string[] { reportName });
@@ -101,9 +101,9 @@ namespace Mawosoft.MissingCoverage.Tests
                 string[] expected = File.ReadAllLines(approvedFile)
                     .SkipWhile(s => s != "Results:").Skip(1)
                     .Select(s =>
-                        s.Substring(0, s.IndexOf('('))
+                        s[..s.IndexOf('(', StringComparison.Ordinal)]
                          .Replace(Path.DirectorySeparatorChar == '/' ? '\\' : '/', Path.DirectorySeparatorChar)
-                        + s.Substring(s.IndexOf('(')))
+                        + s[s.IndexOf('(', StringComparison.Ordinal)..])
                     .ToArray();
                 Assert.Equal(expected.Length, actual.Length);
                 for (int i = 0; i < expected.Length; i++)

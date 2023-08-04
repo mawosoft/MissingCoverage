@@ -1,10 +1,9 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -12,16 +11,6 @@ namespace Mawosoft.MissingCoverage.Tests
 {
     internal static class ProgramTestHelper
     {
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TEnum[] EnumGetValues<TEnum>() where TEnum : struct, Enum
-        {
-#if NET5_0_OR_GREATER
-            return Enum.GetValues<TEnum>();
-#else
-            return (TEnum[])Enum.GetValues(typeof(TEnum));
-#endif
-        }
 
         // Wrapper will be closed and successfully asserted lines at the top will be removed.
 
@@ -99,7 +88,7 @@ namespace Mawosoft.MissingCoverage.Tests
             {
                 string line = wrapper.Lines.FirstOrDefault() ?? string.Empty;
                 Assert.StartsWith("1>" + fileName, line, StringComparison.Ordinal);
-                line = line.Substring(fileName.Length + 2);
+                line = line[(fileName.Length + 2)..];
                 Assert.Matches(s_regexResultLine, line);
                 Match match = s_regexResultLine.Match(line);
                 Assert.Equal(firstLine.ToString(), match.Groups["first"].Value);

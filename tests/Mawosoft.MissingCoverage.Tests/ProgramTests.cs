@@ -1,9 +1,8 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Xml;
 using Xunit;
-using Xunit.Abstractions;
 
 using static Mawosoft.MissingCoverage.Tests.ProgramTestHelper;
 
@@ -14,7 +13,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteResultLine_WritesTitles()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             string filePath = "somedir/somefile.cs";
             LineInfo line = new() { Hits = 0 };
             wrapper.Program.WriteResultLine(filePath, 1, 1, line);
@@ -44,7 +43,7 @@ namespace Mawosoft.MissingCoverage.Tests
                         CoveredBranches = coveredBranches,
                         TotalBranches = totalBranches
                     };
-                    RedirectWrapper wrapper = new();
+                    using RedirectWrapper wrapper = new();
                     wrapper.Program.Options.Verbosity = VerbosityLevel.Quiet; // Suppress titles
                     wrapper.Program.Options.NoCollapse = noCollapse;
                     wrapper.Program.WriteResultLine(filePath, firstLine, lastLine, lineInfo);
@@ -57,9 +56,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteLineNormal_WriteLineDetailed_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 string normal = "The normal line written.";
                 string detailed = "The detailed line written.";
@@ -87,9 +86,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteFileError_WritesStderr_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 Exception ex = Assert.ThrowsAny<Exception>(
                     (Action)(static () => throw new InvalidOperationException("My message")));
@@ -106,7 +105,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteFileError_WithXmlException_WritesLineInfo()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException(null, null, 7, 20)));
             string filePath = "somedir/somefile.cs";
             wrapper.Program.WriteFileError(filePath, ex);
@@ -119,7 +118,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteFileError_WithoutFilePath_WritesToolError()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             Exception ex = Assert.Throws<XmlException>((Action)(static () => throw new XmlException(null, null, 7, 20)));
             wrapper.Program.WriteFileError(null!, ex);
             AssertAppTitle(wrapper);
@@ -131,9 +130,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteToolError_WritesStderr_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 Exception ex = Assert.ThrowsAny<Exception>(
                     (Action)(static () => throw new InvalidOperationException("My message")));
@@ -149,7 +148,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteAppTitle_WritesOnce_HonorsNoLogo()
         {
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.NoLogo = true;
             wrapper.Program.WriteAppTitle();
             wrapper.Program.WriteAppTitle();
@@ -160,9 +159,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteAppTitle_WritesOnce_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 wrapper.Program.WriteAppTitle();
                 wrapper.Program.WriteAppTitle();
@@ -174,9 +173,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteInputTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 wrapper.Program.WriteInputTitle();
                 wrapper.Program.WriteInputTitle();
@@ -189,9 +188,9 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void WriteResultTitle_WritesOnce_WritesAppTitle_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 wrapper.Program.WriteResultTitle();
                 wrapper.Program.WriteResultTitle();

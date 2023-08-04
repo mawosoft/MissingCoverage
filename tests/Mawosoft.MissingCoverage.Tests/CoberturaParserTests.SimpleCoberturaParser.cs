@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,7 @@ namespace Mawosoft.MissingCoverage.Tests
     {
         // Simple XPath-based parser for comparison, only intended for the predefined test files.
         // Returns unresolved, normalized file names and list of *unnormalized* source directories.
+        [SuppressMessage("Security", "CA5372:Use XmlReader for XPathDocument constructor", Justification = "Only used for test files.")]
         internal static (CoverageResult result, List<string> sourceDirectories)
             SimpleCoberturaParser(string reportFilePath)
         {

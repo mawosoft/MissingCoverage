@@ -23,7 +23,7 @@ namespace Mawosoft.MissingCoverage.Tests
             source = new("def", DateTime.MinValue);
             source.AddOrMergeLine(1, line);
             result.AddOrMergeSourceFile(source);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Quiet; // Suppress titles
             wrapper.Program.WriteResults(result);
             AssertResultLine(wrapper, "abc", 1, 1, line);
@@ -51,7 +51,7 @@ namespace Mawosoft.MissingCoverage.Tests
             source.AddOrMergeLine(5, new LineInfo() { Hits = 10, TotalBranches = 4, CoveredBranches = 3 });
             source.AddOrMergeLine(6, new LineInfo() { Hits = 10, TotalBranches = 4, CoveredBranches = 2 });
             result.AddOrMergeSourceFile(source);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Quiet; // Suppress titles
             wrapper.Program.Options.HitThreshold = hitThreshold;
             wrapper.Program.Options.CoverageThreshold = coverageThreshold;
@@ -77,9 +77,9 @@ namespace Mawosoft.MissingCoverage.Tests
                     source.AddOrMergeLine(1, new LineInfo() { Hits = 1 });
                     result.AddOrMergeSourceFile(source);
                 }
-                foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+                foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
                 {
-                    RedirectWrapper wrapper = new();
+                    using RedirectWrapper wrapper = new();
                     wrapper.Program.Options.Verbosity = verbosity;
                     wrapper.Program.WriteResults(result);
                     AssertAppTitle(wrapper);
@@ -101,7 +101,7 @@ namespace Mawosoft.MissingCoverage.Tests
             SourceFileInfo source = new("abc", DateTime.MinValue);
             source.AddOrMergeLine(1, line);
             result.AddOrMergeSourceFile(source);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
             wrapper.Program.WriteToolError(new Exception());
             int expectedLineCount = wrapper.CloneLines().Count;

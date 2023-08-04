@@ -17,7 +17,7 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             using TempDirectory tempDirectory = new();
             List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
             wrapper.Program.Options.GlobPatterns.Add(Path.Combine(tempDirectory.FullPath, "**", "*"));
             IEnumerable<string> inputFiles = wrapper.Program.GetInputFiles();
@@ -31,7 +31,7 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             using TempDirectory tempDirectory = new();
             List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
             wrapper.Program.Options.GlobPatterns.Add(Path.Combine(tempDirectory.FullPath, "**", "*"));
             wrapper.Program.Options.GlobPatterns.Add(files[0]);
@@ -45,13 +45,12 @@ namespace Mawosoft.MissingCoverage.Tests
         public void GetInputFiles_NoFiles_Throws_HonorsVerbosity()
         {
             using TempDirectory tempDirectory = new();
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 wrapper.Program.Options.GlobPatterns.Add(Path.Combine(tempDirectory.FullPath, "*.*"));
-                InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
-                    () => wrapper.Program.GetInputFiles());
+                InvalidOperationException ex = Assert.Throws<InvalidOperationException>(wrapper.Program.GetInputFiles);
                 AssertAppTitle(wrapper);
                 if (verbosity >= VerbosityLevel.Detailed)
                 {
@@ -66,7 +65,7 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             using TempDirectory tempDirectory = new();
             List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
             wrapper.Program.Options.GlobPatterns.Add(Path.Combine(tempDirectory.FullPath, "**", "*"));
             wrapper.Program.WriteToolError(new Exception());
@@ -100,7 +99,7 @@ namespace Mawosoft.MissingCoverage.Tests
                     .Select(s => Path.Combine(Directory.GetCurrentDirectory(),
                                               Path.GetRelativePath(tempDirectory.FullPath, s)))
                     .Append(files[0]);
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
                 wrapper.Program.Options.GlobPatterns.Add(Path.Combine("subdir1", "subdir1", "report2.xml"));
                 wrapper.Program.Options.GlobPatterns.Add(files[0]); // Switch beetween relative/absolute

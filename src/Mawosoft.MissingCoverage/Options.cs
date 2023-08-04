@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,9 @@ using System.Diagnostics;
 
 namespace Mawosoft.MissingCoverage
 {
+
+#pragma warning disable CA1308 // Normalize strings to uppercase
+
     internal sealed class Options
     {
         private enum ParseResult { Success, Unknown, Invalid };
@@ -47,8 +50,8 @@ namespace Mawosoft.MissingCoverage
                     }
                     else
                     {
-                        arg = arg.Substring(1).ToLowerInvariant();
-                        if (arg.StartsWith('-')) arg = arg.Substring(1);
+                        arg = arg[1..].ToLowerInvariant();
+                        if (arg.StartsWith('-')) arg = arg[1..];
                         ParseResult result = ParseSwitch(arg);
                         if (ShowHelpOnly)
                         {
@@ -63,10 +66,10 @@ namespace Mawosoft.MissingCoverage
                             {
                                 if ((pos + 1) < arg.Length)
                                 {
-                                    nextArg = arg.Substring(pos + 1);
+                                    nextArg = arg[(pos + 1)..];
                                     takeNext = false;
                                 }
-                                arg = arg.Substring(0, pos);
+                                arg = arg[..pos];
                             }
                             result = ParseIntOption(arg, nextArg);
                             if (result == ParseResult.Unknown)

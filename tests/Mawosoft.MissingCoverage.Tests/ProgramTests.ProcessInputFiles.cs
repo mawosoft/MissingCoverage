@@ -19,7 +19,7 @@ namespace Mawosoft.MissingCoverage.Tests
             {
                 using TempDirectory tempDirectory = new();
                 List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = VerbosityLevel.Quiet;
                 wrapper.Program.Options.LatestOnly = latestOnly;
                 CoverageResult result = wrapper.Program.ProcessInputFiles(files);
@@ -33,11 +33,11 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void ProcessInputFiles_Succeeds_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
                 using TempDirectory tempDirectory = new();
                 List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 CoverageResult result = wrapper.Program.ProcessInputFiles(files);
                 Assert.Equal(files, result.ReportFilePaths);
@@ -57,12 +57,12 @@ namespace Mawosoft.MissingCoverage.Tests
         [Fact]
         public void ProcessInputFiles_StopsOnException_HonorsVerbosity()
         {
-            foreach (VerbosityLevel verbosity in EnumGetValues<VerbosityLevel>())
+            foreach (VerbosityLevel verbosity in Enum.GetValues<VerbosityLevel>())
             {
                 using TempDirectory tempDirectory = new();
                 List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
                 File.Delete(files[1]);
-                RedirectWrapper wrapper = new();
+                using RedirectWrapper wrapper = new();
                 wrapper.Program.Options.Verbosity = verbosity;
                 CoverageResult result = wrapper.Program.ProcessInputFiles(files);
                 Assert.Empty(result.ReportFilePaths);
@@ -72,12 +72,12 @@ namespace Mawosoft.MissingCoverage.Tests
                 {
                     AssertOut(wrapper, files[0]);
                 }
-                Assert.StartsWith("2>" + files[1] + "(0,0): error MC9002: ", wrapper.Lines.FirstOrDefault());
+                Assert.StartsWith("2>" + files[1] + "(0,0): error MC9002: ", wrapper.Lines.FirstOrDefault(), StringComparison.Ordinal);
                 wrapper.Lines.RemoveAt(0);
                 if (verbosity == VerbosityLevel.Diagnostic)
                 {
                     Assert.NotEmpty(wrapper.Lines);
-                    Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>")));
+                    Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>", StringComparison.Ordinal)));
                 }
                 else
                 {
@@ -91,7 +91,7 @@ namespace Mawosoft.MissingCoverage.Tests
         {
             using TempDirectory tempDirectory = new();
             List<string> files = CreateMinimalReportFiles(tempDirectory, 3);
-            RedirectWrapper wrapper = new();
+            using RedirectWrapper wrapper = new();
             wrapper.Program.Options.Verbosity = VerbosityLevel.Diagnostic;
             wrapper.Program.WriteToolError(new Exception());
             int expectedLineCount = wrapper.CloneLines().Count;

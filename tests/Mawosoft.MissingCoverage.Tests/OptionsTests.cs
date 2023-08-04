@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -218,7 +218,7 @@ namespace Mawosoft.MissingCoverage.Tests
                     ArgumentException ex = Assert.Throws<ArgumentException>(
                         () => actual.ParseCommandLineArguments(row.ToArguments()));
                     Assert.Contains("Invalid command line argument " + column.Cells[rowIndex].Text,
-                                    ex.Message);
+                                    ex.Message, StringComparison.Ordinal);
                 }
             }
         }
@@ -241,7 +241,7 @@ namespace Mawosoft.MissingCoverage.Tests
                     ArgumentException ex = Assert.Throws<ArgumentException>(
                         () => actual.ParseCommandLineArguments(row.ToArguments()));
                     Assert.Contains("Invalid command line argument " + column.Cells[rowIndex].Text + next,
-                                    ex.Message);
+                                    ex.Message, StringComparison.Ordinal);
                 }
             }
         }
@@ -270,9 +270,9 @@ namespace Mawosoft.MissingCoverage.Tests
                     ArgumentException ex = Assert.Throws<ArgumentException>(
                         () => actual.ParseCommandLineArguments(row.ToArguments()));
                     string text = column.Cells[rowIndex].Text;
-                    int pos = text.IndexOf(' ');
-                    if (pos >= 0) text = text.Substring(0, pos);
-                    Assert.Contains("Unknown command line argument " + text, ex.Message);
+                    int pos = text.IndexOf(' ', StringComparison.Ordinal);
+                    if (pos >= 0) text = text[..pos];
+                    Assert.Contains("Unknown command line argument " + text, ex.Message, StringComparison.Ordinal);
                 }
             }
         }

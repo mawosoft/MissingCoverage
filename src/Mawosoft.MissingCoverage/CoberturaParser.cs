@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Xml;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal class CoberturaParser : IDisposable
+    internal sealed class CoberturaParser : IDisposable
     {
         private static readonly Regex s_regexDeterministic = new(
             @"^/_\d?/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -70,6 +70,7 @@ namespace Mawosoft.MissingCoverage
             _sourceDirectories = new();
         }
 
+        [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "TODO false positive?")]
         public CoverageResult Parse()
         {
             CheckDisposed();
@@ -174,17 +175,17 @@ namespace Mawosoft.MissingCoverage
                             int pos = coverage.IndexOf('(');
                             if (pos >= 0)
                             {
-                                coverage = coverage.Slice(pos + 1);
+                                coverage = coverage[(pos + 1)..];
                                 pos = coverage.IndexOf('/');
                                 if (pos < 0
-                                    || !ushort.TryParse(coverage.Slice(0, pos), out lineInfo.CoveredBranches))
+                                    || !ushort.TryParse(coverage[..pos], out lineInfo.CoveredBranches))
                                 {
                                     ThrowInvalidConditionCoverage();
                                 }
-                                coverage = coverage.Slice(pos + 1);
+                                coverage = coverage[(pos + 1)..];
                                 pos = coverage.IndexOf(')');
                                 if (pos < 0
-                                    || !ushort.TryParse(coverage.Slice(0, pos), out lineInfo.TotalBranches))
+                                    || !ushort.TryParse(coverage[..pos], out lineInfo.TotalBranches))
                                 {
                                     ThrowInvalidConditionCoverage();
                                 }
