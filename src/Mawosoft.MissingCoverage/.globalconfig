@@ -1,0 +1,7 @@
+# Project-specific config
+
+is_global = true
+#global_level = 100
+
+# CA2225: Operator overloads have named alternates
+dotnet_diagnostic.CA2225.severity = none

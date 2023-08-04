@@ -1,0 +1,16 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Disables analyzers during normal and design-time builds, but still allows them
+         to be run explicitly via 'Run Analyzers' command in VStudio. -->
+    <RunAnalyzers>false</RunAnalyzers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Mawosoft.Extensions.BenchmarkDotNet" />
+  </ItemGroup>
+
+</Project>
