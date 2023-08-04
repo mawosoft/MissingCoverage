@@ -48,8 +48,7 @@ dotnet_separate_import_directive_groups = false
 dotnet_sort_system_directives_first = true
 
 # IDE0160/161: Block/file-scoped namespace
-# TODO csharp_style_namespace_declarations = file_scoped
-csharp_style_namespace_declarations = block_scoped
+csharp_style_namespace_declarations = file_scoped
 
 
 ## Formatting rules

@@ -1,13 +1,12 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-namespace Mawosoft.MissingCoverage
+namespace Mawosoft.MissingCoverage;
+
+internal enum VerbosityLevel
 {
-    internal enum VerbosityLevel
-    {
-        Quiet,
-        Minimal,
-        Normal,
-        Detailed,
-        Diagnostic
-    };
-}
+    Quiet,
+    Minimal,
+    Normal,
+    Detailed,
+    Diagnostic
+};
