@@ -1,5 +1,9 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
+#pragma warning disable IDE0005 // Using directive is unnecessary.
+using System.Runtime.CompilerServices;
+#pragma warning restore IDE0005 // Using directive is unnecessary.
+
 namespace System.IO;
 
 internal static class TestDataDirectory
