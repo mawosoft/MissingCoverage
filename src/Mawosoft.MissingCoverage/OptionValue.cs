@@ -1,7 +1,10 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+
+using System.Diagnostics.CodeAnalysis;
 
 namespace Mawosoft.MissingCoverage
 {
+    [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Not needed.")]
     internal struct OptionValue<T>
     {
         private T _value;

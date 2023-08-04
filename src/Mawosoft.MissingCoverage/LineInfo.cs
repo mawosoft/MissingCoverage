@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -63,7 +63,7 @@ namespace Mawosoft.MissingCoverage
         }
 
         public override readonly string ToString()
-            => Hits.ToString() + (IsLine ? string.Empty : "?")
+            => $"{Hits}{(IsLine ? string.Empty : "?")}"
                + (CoveredBranches != 0 || TotalBranches != 0
                   ? $" ({CoveredBranches}/{TotalBranches})"
                   : string.Empty);
@@ -76,5 +76,9 @@ namespace Mawosoft.MissingCoverage
 
         public override readonly bool Equals([NotNullWhen(true)] object? obj) => obj is LineInfo line && Equals(line);
         public override readonly int GetHashCode() => HashCode.Combine(_hits, CoveredBranches, TotalBranches);
+
+        public static bool operator ==(LineInfo left, LineInfo right) => left.Equals(right);
+
+        public static bool operator !=(LineInfo left, LineInfo right) => !(left == right);
     }
 }

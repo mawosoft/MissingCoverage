@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System.Runtime.CompilerServices;
 
@@ -79,7 +79,7 @@ namespace System.IO
                 // Resolve deterministic paths
                 int pos = basePath.IndexOf('/', 1);
                 if (pos >= 0) pos++; // Substring will throw if pos < 0
-                basePath = Path.GetDirectoryName(basePath.Substring(pos)) ?? string.Empty;
+                basePath = Path.GetDirectoryName(basePath[pos..]) ?? string.Empty;
                 string? rootPath = GetCIDirectory();
                 rootPath ??= GetGitDirectory() ?? string.Empty;
                 basePath = Path.Combine(rootPath, basePath);

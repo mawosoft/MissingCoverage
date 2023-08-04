@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ namespace Mawosoft.MissingCoverage.Tests
     public class CoverageResultTests
     {
         [Fact]
-        public void ctor_Default_Succeeds()
+        public void Ctor_Default_Succeeds()
         {
             CoverageResult result = new();
             Assert.False(result.LatestOnly, "LatestOnly");
@@ -20,7 +20,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void ctor_LatestOnly_Succeeds(bool latestOnly)
+        public void Ctor_LatestOnly_Succeeds(bool latestOnly)
         {
             CoverageResult result = new(latestOnly);
             Assert.Equal(latestOnly, result.LatestOnly);
@@ -32,7 +32,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
-        public void ctor_InvalidReportFilePath_Throws(string reportFilePath)
+        public void Ctor_InvalidReportFilePath_Throws(string reportFilePath)
         {
             ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
                 () => _ = new CoverageResult(reportFilePath));
@@ -43,7 +43,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData("somefile")]
         [InlineData(@"c:\somedir\somefile.xml")]
         [InlineData("/home/somedir/somefile")]
-        public void ctor_ValidReportFilePath_Succeeds(string reportFilePath)
+        public void Ctor_ValidReportFilePath_Succeeds(string reportFilePath)
         {
             CoverageResult result = new(reportFilePath);
             Assert.False(result.LatestOnly, "LatestOnly");

@@ -1,17 +1,19 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 // Based on:
 // - Mawosoft.ImdbScrape.Http.Tests.MockCacheDirectory
 // - https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/System/IO/TempFile.cs
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 
 namespace Mawosoft.MissingCoverage.Tests
 {
-    public class TempFile : IDisposable
+
+#pragma warning disable CA1031 // Do not catch general exception types
+
+    public sealed class TempFile : IDisposable
     {
         public string FullPath { get; }
         public bool AutoDelete { get; set; }

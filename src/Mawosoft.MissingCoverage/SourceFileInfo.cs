@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal class SourceFileInfo
+    internal sealed class SourceFileInfo
     {
         private static int s_defaultLineCount = 500;
         private static int s_maxLineNumber = 50_000;
@@ -55,6 +55,7 @@ namespace Mawosoft.MissingCoverage
         public override string ToString()
             => $"{SourceFilePath} ({LastLineNumber}) [{ReportTimestamp}]";
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "Array boundary check.")]
         public void AddOrMergeLine(int lineNumber, LineInfo line)
         {
             if (lineNumber <= 0)

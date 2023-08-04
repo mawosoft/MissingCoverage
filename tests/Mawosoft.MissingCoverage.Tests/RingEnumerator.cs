@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Mawosoft.MissingCoverage.Tests
 {
-    internal class RingEnumerator<T> : IEnumerator<T>
+    internal sealed class RingEnumerator<T> : IEnumerator<T>
     {
         private IEnumerator<T> _enumerator;
         private readonly IEnumerable<T>? _enumerable;

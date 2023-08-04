@@ -1,11 +1,11 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal class CoverageResult
+    internal sealed class CoverageResult
     {
         public bool LatestOnly { get; }
         public List<string> ReportFilePaths { get; } = new();

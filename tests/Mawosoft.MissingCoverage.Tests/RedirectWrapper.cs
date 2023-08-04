@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections;
@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Mawosoft.MissingCoverage.Tests
 {
-    internal class RedirectWrapper
+    internal sealed class RedirectWrapper : IDisposable
     {
         private readonly SyncLineWriter _out;
         private readonly SyncLineWriter _error;
@@ -58,6 +58,8 @@ namespace Mawosoft.MissingCoverage.Tests
             _out.Close();
             _error.Close();
         }
+
+        public void Dispose() => Close();
 
         private class SyncLineWriter : TextWriter
         {

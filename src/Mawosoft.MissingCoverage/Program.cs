@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,10 @@ using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
 namespace Mawosoft.MissingCoverage
 {
-    internal class Program
+
+#pragma warning disable CA1031 // Do not catch general exception types
+
+    internal sealed class Program
     {
         public static string Name => nameof(MissingCoverage);
         public static string Version { get; } = (Attribute.GetCustomAttribute(typeof(Program).Assembly, typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute)?.InformationalVersion?.Split('+')[0] ?? string.Empty;
@@ -177,7 +180,7 @@ namespace Mawosoft.MissingCoverage
             }
 
             List<SourceFileInfo> sourceFiles = new(mergedResult.SourceFiles.Values);
-            sourceFiles.Sort((x, y) => string.Compare(x.SourceFilePath, y.SourceFilePath));
+            sourceFiles.Sort((x, y) => string.CompareOrdinal(x.SourceFilePath, y.SourceFilePath));
             if (Options.CoverageThreshold < 100)
             {
                 foreach (SourceFileInfo sourceFile in sourceFiles)
@@ -239,7 +242,7 @@ namespace Mawosoft.MissingCoverage
             {
                 for (int i = firstLine; i <= lastLine; i++)
                 {
-                    Out.WriteLine(fileName + i.ToString() + warning);
+                    Out.WriteLine($"{fileName}{i}{warning}");
                 }
             }
             else

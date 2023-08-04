@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
 using System.Collections.Generic;
@@ -97,7 +97,7 @@ namespace Mawosoft.MissingCoverage.Tests
         [InlineData(null)]
         [InlineData("")]
         [InlineData("  ")]
-        public void ctor_InvalidReportFilePath_Throws(string reportFilePath)
+        public void Ctor_InvalidReportFilePath_Throws(string reportFilePath)
         {
             ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
                 () => _ = new CoverageResult(reportFilePath));
@@ -105,7 +105,7 @@ namespace Mawosoft.MissingCoverage.Tests
         }
 
         [Fact]
-        public void ctor_NonExistingReportFilePath_Throws()
+        public void Ctor_NonExistingReportFilePath_Throws()
         {
             string reportFilePath = Path.Combine(Path.GetTempPath(), "nonexisting.file");
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(
@@ -113,7 +113,7 @@ namespace Mawosoft.MissingCoverage.Tests
         }
 
         [Fact]
-        public void ctor_ExistingReportFilePath_Succeeds()
+        public void Ctor_ExistingReportFilePath_Succeeds()
         {
             using TempFile tempFile = new();
             using CoberturaParser parser = new(tempFile.FullPath);
@@ -135,6 +135,7 @@ namespace Mawosoft.MissingCoverage.Tests
         }
 
         [Fact]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test for Dispose.")]
         public void Dispose_MultipleCalls_Succeeds()
         {
             using TempFile tempFile = new();
@@ -144,7 +145,7 @@ namespace Mawosoft.MissingCoverage.Tests
             {
                 parser.Dispose();
                 Assert.Equal(ReadState.Closed, parser.ReadState);
-                ((IDisposable)parser).Dispose();
+                parser.Dispose();
                 Assert.Equal(ReadState.Closed, parser.ReadState);
             }
         }
