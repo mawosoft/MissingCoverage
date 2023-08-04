@@ -1,11 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 public class OptionValueTests

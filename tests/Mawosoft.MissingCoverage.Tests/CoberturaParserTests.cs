@@ -1,12 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml;
-using System.Xml.Linq;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 public partial class CoberturaParserTests
@@ -135,7 +128,7 @@ public partial class CoberturaParserTests
     }
 
     [Fact]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test for Dispose.")]
+    [SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "Test for Dispose.")]
     public void Dispose_MultipleCalls_Succeeds()
     {
         using TempFile tempFile = new();

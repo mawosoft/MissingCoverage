@@ -1,11 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Xunit;
-
 using static Mawosoft.MissingCoverage.Tests.ProgramTestHelper;
 
 namespace Mawosoft.MissingCoverage.Tests;

@@ -1,15 +1,6 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
-using System.Xml;
-using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
-
 namespace Mawosoft.MissingCoverage;
-
 
 #pragma warning disable CA1031 // Do not catch general exception types
 

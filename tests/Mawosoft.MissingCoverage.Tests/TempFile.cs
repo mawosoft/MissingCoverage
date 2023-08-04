@@ -4,12 +4,7 @@
 // - Mawosoft.ImdbScrape.Http.Tests.MockCacheDirectory
 // - https://github.com/dotnet/runtime/blob/main/src/libraries/Common/tests/System/IO/TempFile.cs
 
-using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-
 namespace Mawosoft.MissingCoverage.Tests;
-
 
 #pragma warning disable CA1031 // Do not catch general exception types
 

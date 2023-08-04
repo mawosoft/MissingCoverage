@@ -1,14 +1,6 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
-
 
 internal static class OptionsTestHelper
 {

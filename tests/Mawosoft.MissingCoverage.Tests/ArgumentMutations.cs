@@ -1,7 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 [Flags]

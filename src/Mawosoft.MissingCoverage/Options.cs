@@ -1,11 +1,6 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-
 namespace Mawosoft.MissingCoverage;
-
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
 

@@ -1,13 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.XPath;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 public partial class CoberturaParserTests
