@@ -4,46 +4,45 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Mawosoft.MissingCoverage.Tests
+namespace Mawosoft.MissingCoverage.Tests;
+
+internal sealed class RingEnumerator<T> : IEnumerator<T>
 {
-    internal sealed class RingEnumerator<T> : IEnumerator<T>
+    private IEnumerator<T> _enumerator;
+    private readonly IEnumerable<T>? _enumerable;
+
+    public RingEnumerator(IEnumerator<T> source)
+        => _enumerator = source ?? throw new ArgumentNullException(nameof(source));
+
+    public RingEnumerator(IEnumerable<T> source)
     {
-        private IEnumerator<T> _enumerator;
-        private readonly IEnumerable<T>? _enumerable;
+        _enumerable = source ?? throw new ArgumentNullException(nameof(source));
+        _enumerator = source.GetEnumerator();
+    }
 
-        public RingEnumerator(IEnumerator<T> source)
-            => _enumerator = source ?? throw new ArgumentNullException(nameof(source));
+    public T Current => _enumerator.Current;
 
-        public RingEnumerator(IEnumerable<T> source)
+    object IEnumerator.Current => Current!;
+
+    public void Dispose() => _enumerator?.Dispose();
+
+    public bool MoveNext()
+    {
+        if (_enumerator.MoveNext()) return true;
+        Reset();
+        return _enumerator.MoveNext();
+    }
+
+    public void Reset()
+    {
+        if (_enumerable == null)
         {
-            _enumerable = source ?? throw new ArgumentNullException(nameof(source));
-            _enumerator = source.GetEnumerator();
+            _enumerator.Reset();
         }
-
-        public T Current => _enumerator.Current;
-
-        object IEnumerator.Current => Current!;
-
-        public void Dispose() => _enumerator?.Dispose();
-
-        public bool MoveNext()
+        else
         {
-            if (_enumerator.MoveNext()) return true;
-            Reset();
-            return _enumerator.MoveNext();
-        }
-
-        public void Reset()
-        {
-            if (_enumerable == null)
-            {
-                _enumerator.Reset();
-            }
-            else
-            {
-                _enumerator?.Dispose();
-                _enumerator = _enumerable.GetEnumerator();
-            }
+            _enumerator?.Dispose();
+            _enumerator = _enumerable.GetEnumerator();
         }
     }
 }

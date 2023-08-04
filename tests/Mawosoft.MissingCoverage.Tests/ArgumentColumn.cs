@@ -6,161 +6,160 @@ using System.Reflection;
 
 using static Mawosoft.MissingCoverage.Tests.OptionsTestHelper;
 
-namespace Mawosoft.MissingCoverage.Tests
+namespace Mawosoft.MissingCoverage.Tests;
+
+internal class ArgumentColumn
 {
-    internal class ArgumentColumn
+    private List<ArgumentCell> _cells;
+
+    public PropertyInfo? PropertyInfo => _cells.FirstOrDefault()?.PropertyInfo;
+    public string? PropertyName => PropertyInfo?.Name;
+    public IReadOnlyList<ArgumentCell> Cells => _cells;
+    public bool RepeatOnResize { get; set; } = true;
+
+    public ArgumentColumn(IEnumerable<ArgumentCell> cells) => _cells = new(cells);
+
+    public ArgumentColumn(ArgumentCell cell) => (_cells = new()).Add(cell);
+
+    public void ResizeRows(int count)
     {
-        private List<ArgumentCell> _cells;
-
-        public PropertyInfo? PropertyInfo => _cells.FirstOrDefault()?.PropertyInfo;
-        public string? PropertyName => PropertyInfo?.Name;
-        public IReadOnlyList<ArgumentCell> Cells => _cells;
-        public bool RepeatOnResize { get; set; } = true;
-
-        public ArgumentColumn(IEnumerable<ArgumentCell> cells) => _cells = new(cells);
-
-        public ArgumentColumn(ArgumentCell cell) => (_cells = new()).Add(cell);
-
-        public void ResizeRows(int count)
+        if (count != _cells.Count)
         {
-            if (count != _cells.Count)
+            if (RepeatOnResize)
             {
-                if (RepeatOnResize)
-                {
-                    _cells = RingOfRows().Take(count).ToList();
-                }
-                else
-                {
-                    _cells = FillWithEmpty().Take(count).ToList();
-                }
+                _cells = RingOfRows().Take(count).ToList();
             }
-
-            IEnumerable<ArgumentCell> RingOfRows()
+            else
             {
-                using RingEnumerator<ArgumentCell> enumerator = new(_cells);
-                while (enumerator.MoveNext())
-                {
-                    yield return enumerator.Current;
-                }
-            }
-
-            IEnumerable<ArgumentCell> FillWithEmpty()
-            {
-                using IEnumerator<ArgumentCell> enumerator = _cells.GetEnumerator();
-                while (enumerator.MoveNext())
-                {
-                    yield return enumerator.Current;
-                }
-                while (true)
-                {
-                    yield return new ArgumentCell("", null);
-                }
+                _cells = FillWithEmpty().Take(count).ToList();
             }
         }
 
-        public static ArgumentColumn Create(string propertyName, ArgumentMutations mutations) => Create(
-            typeof(Options).GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public)!, mutations);
-
-        public static ArgumentColumn Create(PropertyInfo propertyInfo, ArgumentMutations mutations)
+        IEnumerable<ArgumentCell> RingOfRows()
         {
-            ArgumentInfo argInfo = ArgumentInfo.Infos(propertyInfo.Name);
-            string[] oneEmptyString = new[] { "" };
-
-            IEnumerable<string> aliases = argInfo.Aliases.Count != 0
-                ? (mutations.HasFlag(ArgumentMutations.Alias)
-                    ? argInfo.Aliases : argInfo.Aliases.Take(1))
-                : oneEmptyString;
-
-            IEnumerable<string> hyphens = argInfo.Aliases.Count != 0
-                ? (mutations.HasFlag(ArgumentMutations.Hyphen)
-                    ? new[] { "-", "--" } : new[] { "-" })
-                : oneEmptyString;
-
-            int casingCount = mutations.HasFlag(ArgumentMutations.Casing) ? 3 : 1;
-
-            // Use full permutations for hyphen, alias, and casing
-            List<string> prefixedAliases = new();
-            foreach (string alias in aliases)
+            using RingEnumerator<ArgumentCell> enumerator = new(_cells);
+            while (enumerator.MoveNext())
             {
-                if (alias.Length == 0)
+                yield return enumerator.Current;
+            }
+        }
+
+        IEnumerable<ArgumentCell> FillWithEmpty()
+        {
+            using IEnumerator<ArgumentCell> enumerator = _cells.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+            while (true)
+            {
+                yield return new ArgumentCell("", null);
+            }
+        }
+    }
+
+    public static ArgumentColumn Create(string propertyName, ArgumentMutations mutations) => Create(
+        typeof(Options).GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public)!, mutations);
+
+    public static ArgumentColumn Create(PropertyInfo propertyInfo, ArgumentMutations mutations)
+    {
+        ArgumentInfo argInfo = ArgumentInfo.Infos(propertyInfo.Name);
+        string[] oneEmptyString = new[] { "" };
+
+        IEnumerable<string> aliases = argInfo.Aliases.Count != 0
+            ? (mutations.HasFlag(ArgumentMutations.Alias)
+                ? argInfo.Aliases : argInfo.Aliases.Take(1))
+            : oneEmptyString;
+
+        IEnumerable<string> hyphens = argInfo.Aliases.Count != 0
+            ? (mutations.HasFlag(ArgumentMutations.Hyphen)
+                ? new[] { "-", "--" } : new[] { "-" })
+            : oneEmptyString;
+
+        int casingCount = mutations.HasFlag(ArgumentMutations.Casing) ? 3 : 1;
+
+        // Use full permutations for hyphen, alias, and casing
+        List<string> prefixedAliases = new();
+        foreach (string alias in aliases)
+        {
+            if (alias.Length == 0)
+            {
+                prefixedAliases.Add(alias);
+            }
+            else
+            {
+                foreach (string hyphen in hyphens)
                 {
-                    prefixedAliases.Add(alias);
-                }
-                else
-                {
-                    foreach (string hyphen in hyphens)
+                    for (int i = 0; i < casingCount; i++)
                     {
-                        for (int i = 0; i < casingCount; i++)
+                        switch (i)
                         {
-                            switch (i)
-                            {
-                                case 0:
-                                    prefixedAliases.Add(hyphen + alias);
-                                    break;
-                                case 1:
-                                    prefixedAliases.Add(hyphen + alias.ToUpperInvariant());
-                                    break;
-                                case 2:
-                                    prefixedAliases.Add(hyphen + ToMixedCase(alias));
-                                    break;
-                            }
+                            case 0:
+                                prefixedAliases.Add(hyphen + alias);
+                                break;
+                            case 1:
+                                prefixedAliases.Add(hyphen + alias.ToUpperInvariant());
+                                break;
+                            case 2:
+                                prefixedAliases.Add(hyphen + ToMixedCase(alias));
+                                break;
                         }
                     }
                 }
             }
-
-            IEnumerable<string> delimiters = argInfo.Aliases.Count != 0 && !argInfo.IsSwitch
-                ? (mutations.HasFlag(ArgumentMutations.Delimiter)
-                    ? new[] { " ", ":", "=", ": ", "= " } : new[] { " " })
-                : oneEmptyString;
-
-            List<(string, object?)> valuesAndTexts = new();
-            if (mutations.HasFlag(ArgumentMutations.InvalidValues) && !argInfo.IsSwitch)
-            {
-                valuesAndTexts.AddRange(argInfo.InvalidValues);
-            }
-            if (mutations.HasFlag(ArgumentMutations.MissingValue) && !argInfo.IsSwitch)
-            {
-                valuesAndTexts.Add(("", null));
-            }
-            if (mutations.HasFlag(ArgumentMutations.ValidValues))
-            {
-                valuesAndTexts.AddRange(argInfo.ValidValues);
-            }
-            if (valuesAndTexts.Count == 0)
-            {
-                valuesAndTexts.Add(argInfo.ValidValues[0]);
-            }
-
-            int maxMutations =
-                new[] { prefixedAliases.Count, delimiters.Count(), valuesAndTexts.Count }.Max();
-
-            List<ArgumentCell> cells = new();
-            using RingEnumerator<string> aliasEnumerator = new(prefixedAliases);
-            using RingEnumerator<string> delimiterEnumerator = new(delimiters);
-            using RingEnumerator<(string, object?)> valueAndTextEnumerator = new(valuesAndTexts);
-
-            for (int i = 0; i < maxMutations; i++)
-            {
-                aliasEnumerator.MoveNext();
-                delimiterEnumerator.MoveNext();
-                valueAndTextEnumerator.MoveNext();
-                (string text, object? value) = valueAndTextEnumerator.Current;
-                string alias = aliasEnumerator.Current;
-                if (alias.Length != 0 && !argInfo.IsSwitch)
-                {
-                    alias += delimiterEnumerator.Current;
-                }
-                // TrimEnd for space or space-ending delimiter + empty (missing) value text
-                cells.Add(new ArgumentCell(propertyInfo, propertyInfo.Name, (alias + text).TrimEnd(), value));
-
-            }
-
-            return new ArgumentColumn(cells)
-            {
-                RepeatOnResize = mutations.HasFlag(ArgumentMutations.RepeatOnResize)
-            };
         }
 
+        IEnumerable<string> delimiters = argInfo.Aliases.Count != 0 && !argInfo.IsSwitch
+            ? (mutations.HasFlag(ArgumentMutations.Delimiter)
+                ? new[] { " ", ":", "=", ": ", "= " } : new[] { " " })
+            : oneEmptyString;
+
+        List<(string, object?)> valuesAndTexts = new();
+        if (mutations.HasFlag(ArgumentMutations.InvalidValues) && !argInfo.IsSwitch)
+        {
+            valuesAndTexts.AddRange(argInfo.InvalidValues);
+        }
+        if (mutations.HasFlag(ArgumentMutations.MissingValue) && !argInfo.IsSwitch)
+        {
+            valuesAndTexts.Add(("", null));
+        }
+        if (mutations.HasFlag(ArgumentMutations.ValidValues))
+        {
+            valuesAndTexts.AddRange(argInfo.ValidValues);
+        }
+        if (valuesAndTexts.Count == 0)
+        {
+            valuesAndTexts.Add(argInfo.ValidValues[0]);
+        }
+
+        int maxMutations =
+            new[] { prefixedAliases.Count, delimiters.Count(), valuesAndTexts.Count }.Max();
+
+        List<ArgumentCell> cells = new();
+        using RingEnumerator<string> aliasEnumerator = new(prefixedAliases);
+        using RingEnumerator<string> delimiterEnumerator = new(delimiters);
+        using RingEnumerator<(string, object?)> valueAndTextEnumerator = new(valuesAndTexts);
+
+        for (int i = 0; i < maxMutations; i++)
+        {
+            aliasEnumerator.MoveNext();
+            delimiterEnumerator.MoveNext();
+            valueAndTextEnumerator.MoveNext();
+            (string text, object? value) = valueAndTextEnumerator.Current;
+            string alias = aliasEnumerator.Current;
+            if (alias.Length != 0 && !argInfo.IsSwitch)
+            {
+                alias += delimiterEnumerator.Current;
+            }
+            // TrimEnd for space or space-ending delimiter + empty (missing) value text
+            cells.Add(new ArgumentCell(propertyInfo, propertyInfo.Name, (alias + text).TrimEnd(), value));
+
+        }
+
+        return new ArgumentColumn(cells)
+        {
+            RepeatOnResize = mutations.HasFlag(ArgumentMutations.RepeatOnResize)
+        };
     }
+
 }

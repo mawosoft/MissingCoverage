@@ -3,60 +3,59 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mawosoft.MissingCoverage
+namespace Mawosoft.MissingCoverage;
+
+internal sealed class CoverageResult
 {
-    internal sealed class CoverageResult
+    public bool LatestOnly { get; }
+    public List<string> ReportFilePaths { get; } = new();
+    public Dictionary<string, SourceFileInfo> SourceFiles { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public CoverageResult() { }
+
+    public CoverageResult(bool latestOnly) => LatestOnly = latestOnly;
+
+    public CoverageResult(string reportFilePath)
     {
-        public bool LatestOnly { get; }
-        public List<string> ReportFilePaths { get; } = new();
-        public Dictionary<string, SourceFileInfo> SourceFiles { get; } = new(StringComparer.OrdinalIgnoreCase);
-
-        public CoverageResult() { }
-
-        public CoverageResult(bool latestOnly) => LatestOnly = latestOnly;
-
-        public CoverageResult(string reportFilePath)
+        if (string.IsNullOrWhiteSpace(reportFilePath))
         {
-            if (string.IsNullOrWhiteSpace(reportFilePath))
-            {
-                throw new ArgumentException(null, nameof(reportFilePath));
-            }
-            ReportFilePaths.Add(reportFilePath);
+            throw new ArgumentException(null, nameof(reportFilePath));
         }
+        ReportFilePaths.Add(reportFilePath);
+    }
 
-        public void AddOrMergeSourceFile(SourceFileInfo sourceFile)
+    public void AddOrMergeSourceFile(SourceFileInfo sourceFile)
+    {
+        if (sourceFile == null)
         {
-            if (sourceFile == null)
+            throw new ArgumentNullException(nameof(sourceFile));
+        }
+        if (SourceFiles.TryGetValue(sourceFile.SourceFilePath, out SourceFileInfo? existing))
+        {
+            if (LatestOnly)
             {
-                throw new ArgumentNullException(nameof(sourceFile));
-            }
-            if (SourceFiles.TryGetValue(sourceFile.SourceFilePath, out SourceFileInfo? existing))
-            {
-                if (LatestOnly)
+                if (sourceFile.ReportTimestamp > existing.ReportTimestamp)
                 {
-                    if (sourceFile.ReportTimestamp > existing.ReportTimestamp)
-                    {
-                        SourceFiles[existing.SourceFilePath] = sourceFile;
-                    }
-                }
-                else
-                {
-                    existing.Merge(sourceFile);
+                    SourceFiles[existing.SourceFilePath] = sourceFile;
                 }
             }
             else
             {
-                SourceFiles.Add(sourceFile.SourceFilePath, sourceFile);
+                existing.Merge(sourceFile);
             }
         }
-
-        public void Merge(CoverageResult other)
+        else
         {
-            ReportFilePaths.AddRange(other.ReportFilePaths);
-            foreach (SourceFileInfo fileInfo in other.SourceFiles.Values)
-            {
-                AddOrMergeSourceFile(fileInfo);
-            }
+            SourceFiles.Add(sourceFile.SourceFilePath, sourceFile);
+        }
+    }
+
+    public void Merge(CoverageResult other)
+    {
+        ReportFilePaths.AddRange(other.ReportFilePaths);
+        foreach (SourceFileInfo fileInfo in other.SourceFiles.Values)
+        {
+            AddOrMergeSourceFile(fileInfo);
         }
     }
 }
