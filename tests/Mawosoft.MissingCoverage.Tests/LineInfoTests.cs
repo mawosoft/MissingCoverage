@@ -1,8 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 public class LineInfoTests

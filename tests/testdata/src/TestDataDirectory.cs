@@ -1,7 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System.Runtime.CompilerServices;
-
 namespace System.IO;
 
 internal static class TestDataDirectory

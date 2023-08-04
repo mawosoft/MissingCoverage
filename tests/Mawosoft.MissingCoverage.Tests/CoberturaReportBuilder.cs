@@ -1,13 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 internal class CoberturaReportBuilder

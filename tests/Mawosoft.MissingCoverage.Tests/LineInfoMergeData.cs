@@ -1,9 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System.Collections.Generic;
-using System.Reflection;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 internal class LineInfoMergeData : List<(LineInfo target, LineInfo other, LineInfo expected)>

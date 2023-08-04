@@ -1,12 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Xunit;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 internal static class ProgramTestHelper

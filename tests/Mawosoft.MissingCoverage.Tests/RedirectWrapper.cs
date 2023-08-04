@@ -1,12 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-
 namespace Mawosoft.MissingCoverage.Tests;
 
 internal sealed class RedirectWrapper : IDisposable

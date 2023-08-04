@@ -1,9 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
 namespace Mawosoft.MissingCoverage;
 
 internal struct LineInfo : IEquatable<LineInfo>

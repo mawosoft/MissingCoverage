@@ -1,8 +1,5 @@
 // Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
-using System.Collections.Generic;
-using System.Reflection;
-
 using static Mawosoft.MissingCoverage.Tests.OptionsTestHelper;
 
 namespace Mawosoft.MissingCoverage.Tests;
