@@ -5,10 +5,6 @@ on:
   schedule:
   - cron: '0 5 * * *'
 
-defaults:
-  run:
-    shell: pwsh
-
 jobs:
   Dependencies:
     runs-on: ubuntu-latest
@@ -17,18 +13,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 1
-    - name: dotnet Version
+    - name: Dotnet Version
       run: dotnet --version
-    - name: Restore
-      run: |
-        . ./build/startNativeExecution.ps1
-        Start-NativeExecution { dotnet restore ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj }
     - name: Check dependencies
-      id: dependencies
-      run: ./build/checkDependencies.ps1 -p ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj, ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -Token (ConvertTo-SecureString ${{ secrets.GITHUB_TOKEN }} -AsPlainText)
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ steps.dependencies.outputs.ArtifactName }}
-        path: ${{ steps.dependencies.outputs.ArtifactPath }}
-        retention-days: 5
+      uses: mawosoft/dotnet-dependency-alert@v1
