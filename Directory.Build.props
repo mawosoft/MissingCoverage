@@ -31,6 +31,15 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Needed for IDE0005 in cmdline builds with dotnet SDK >= 7.0.400.
+         See https://github.com/dotnet/roslyn/issues/41640
+         CS1591: Missing XML comment -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
+  </PropertyGroup>
+
   <ItemGroup>
     <GlobalAnalyzerConfigFiles Include="$(MSBuildThisFileDirectory)common.globalconfig" />
     <!-- For temporary local use only -->

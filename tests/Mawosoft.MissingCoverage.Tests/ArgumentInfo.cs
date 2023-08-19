@@ -28,7 +28,7 @@ internal class ArgumentInfo
         ValidValues = new();
         string[] valid = SplitArguments(validValues);
         Options options = new();
-        /// See notes on switch in <see cref="OptionsTests.Clone_Succeeds"/>
+        // See notes on switch in OptionsTests.Clone_Succeeds
         switch (PropertyInfo.GetValue(options))
         {
             case bool:

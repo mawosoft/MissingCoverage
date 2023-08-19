@@ -5,7 +5,6 @@
     <OutputType>Exe</OutputType>
     <RollForward>Major</RollForward>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <IsPackable>true</IsPackable>
     <DebugType>embedded</DebugType>
