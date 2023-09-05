@@ -25,9 +25,12 @@ variables:
 
 steps:
 - checkout: self
-- pwsh: |
-    $env:DOTNET_INSTALL_DIR = '/usr/share/dotnet'
-    Invoke-Expression "& { $(Invoke-RestMethod https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1) } -JsonFile ./global.json"
+- bash: |
+    wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install.sh -nv
+    chmod +x ./dotnet-install.sh
+    ./dotnet-install.sh --jsonfile ./global.json
+  env:
+    DOTNET_INSTALL_DIR : /usr/share/dotnet
   displayName: Setup dotnet (pinned)
 - pwsh: |
     . ./build/startNativeExecution.ps1
