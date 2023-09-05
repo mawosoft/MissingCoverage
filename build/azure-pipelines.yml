@@ -25,10 +25,17 @@ variables:
 
 steps:
 - checkout: self
-- task: UseDotNet@2
-  inputs:
-    useGlobalJson: true
-    installationPath: /usr/share/dotnet
+- bash: |
+    curl -o ./dotnet-install.sh -s https://dot.net/v1/dotnet-install.sh
+    chmod +x ./dotnet-install.sh
+    ./dotnet-install.sh --jsonfile ./global.json
+  env:
+    DOTNET_INSTALL_DIR : /usr/share/dotnet
+  displayName: Setup dotnet (pinned)
+- pwsh: |
+    dotnet --info
+    get-item env: | fl
+  condition: succeededOrFailed()
 - pwsh: |
     . ./build/startNativeExecution.ps1
     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
