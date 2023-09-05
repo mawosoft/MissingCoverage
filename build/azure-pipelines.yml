@@ -28,12 +28,12 @@ steps:
 - bash: |
     curl -o ./dotnet-install.sh -s https://dot.net/v1/dotnet-install.sh
     echo 'after curl'
-    ls ./dotnet-install.sh
+    lsattr -l ./dotnet-install.sh
     chmod +x ./dotnet-install.sh
     echo 'after chmod'
-    ls ./dotnet-install.sh
+    lsattr -l ./dotnet-install.sh
     # ./dotnet-install.sh --jsonfile ./global.json --verbose
-    dotnet-install.sh --help
+    ./dotnet-install.sh --help
     echo 'after script'
     # printenv
   env:
@@ -43,45 +43,45 @@ steps:
     dotnet --info
     get-item env: | fl
   condition: succeededOrFailed()
-- pwsh: |
-    . ./build/startNativeExecution.ps1
-    Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
-  displayName: Build
-  env:
-    MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
-    # Fix incomplete binlogs in MSBuild <=17.3.x. See https://github.com/mawosoft/Mawosoft.Extensions.BenchmarkDotNet/issues/146
-    MSBUILDLOGTASKINPUTS: 1
-    MSBUILDTARGETOUTPUTLOGGING: true
-    MSBUILDLOGIMPORTS: 1
-    MSBUILDLOGALLENVIRONMENTVARIABLES: true
-- publish: ./MSBuild_Logs
-  condition: succeededOrFailed()
-  artifact: azp-Binlogs
-  displayName: Upload Binlogs
-- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
-  displayName: Test
-- task: reportgenerator@5
-  condition: succeededOrFailed()
-  inputs:
-    reports: ./TestResults/Debug/net6.0/*.xml
-    targetdir: ./TestResults/report
-    reporttypes: Cobertura;HtmlInline_AzurePipelines
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: VSTest
-    testResultsFiles: '*.trx'
-    searchFolder: ./TestResults/Debug/net6.0
-    publishRunAttachments: false
-- task: PublishCodeCoverageResults@1
-  condition: succeededOrFailed()
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: ./TestResults/report/Cobertura.xml
-    reportDirectory: ./TestResults/report
-- bash: |
-    curl -o "./codecov" -s https://uploader.codecov.io/latest/linux/codecov
-    chmod +x "./codecov"
-    "./codecov" -f ./TestResults/report/Cobertura.xml -t $(CODECOV_TOKEN)
-  condition: succeededOrFailed()
-  displayName: Upload to codecov.io
+# - pwsh: |
+#     . ./build/startNativeExecution.ps1
+#     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
+#   displayName: Build
+#   env:
+#     MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
+#     # Fix incomplete binlogs in MSBuild <=17.3.x. See https://github.com/mawosoft/Mawosoft.Extensions.BenchmarkDotNet/issues/146
+#     MSBUILDLOGTASKINPUTS: 1
+#     MSBUILDTARGETOUTPUTLOGGING: true
+#     MSBUILDLOGIMPORTS: 1
+#     MSBUILDLOGALLENVIRONMENTVARIABLES: true
+# - publish: ./MSBuild_Logs
+#   condition: succeededOrFailed()
+#   artifact: azp-Binlogs
+#   displayName: Upload Binlogs
+# - pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
+#   displayName: Test
+# - task: reportgenerator@5
+#   condition: succeededOrFailed()
+#   inputs:
+#     reports: ./TestResults/Debug/net6.0/*.xml
+#     targetdir: ./TestResults/report
+#     reporttypes: Cobertura;HtmlInline_AzurePipelines
+# - task: PublishTestResults@2
+#   condition: succeededOrFailed()
+#   inputs:
+#     testResultsFormat: VSTest
+#     testResultsFiles: '*.trx'
+#     searchFolder: ./TestResults/Debug/net6.0
+#     publishRunAttachments: false
+# - task: PublishCodeCoverageResults@1
+#   condition: succeededOrFailed()
+#   inputs:
+#     codeCoverageTool: Cobertura
+#     summaryFileLocation: ./TestResults/report/Cobertura.xml
+#     reportDirectory: ./TestResults/report
+# - bash: |
+#     curl -o "./codecov" -s https://uploader.codecov.io/latest/linux/codecov
+#     chmod +x "./codecov"
+#     "./codecov" -f ./TestResults/report/Cobertura.xml -t $(CODECOV_TOKEN)
+#   condition: succeededOrFailed()
+#   displayName: Upload to codecov.io
