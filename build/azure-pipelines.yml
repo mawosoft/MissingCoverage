@@ -27,8 +27,12 @@ steps:
 - checkout: self
 - bash: |
     curl -o ./dotnet-install.sh -s https://dot.net/v1/dotnet-install.sh
+    echo 'after curl'
     chmod +x ./dotnet-install.sh
+    echo 'after chmod'
     ./dotnet-install.sh --jsonfile ./global.json --verbose
+    echo 'after script'
+    printenv
   env:
     DOTNET_INSTALL_DIR : /usr/share/dotnet
   displayName: Setup dotnet (pinned)
