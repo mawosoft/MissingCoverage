@@ -25,10 +25,9 @@ variables:
 
 steps:
 - checkout: self
-- pwsh: |
-    $env:DOTNET_INSTALL_DIR = '/usr/share/dotnet'
-    Invoke-Expression "& { $(Invoke-RestMethod https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1) } -JsonFile ./global.json"
-  displayName: Setup dotnet (pinned)
+- task: UseDotNet@2
+  inputs:
+    useGlobalJson: true
 - pwsh: |
     . ./build/startNativeExecution.ps1
     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
