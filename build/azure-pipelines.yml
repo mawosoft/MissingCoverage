@@ -30,7 +30,8 @@ steps:
     wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install.sh -nv
     chmod +x ./dotnet-install.sh
     ls -l ./dotnet-install.sh
-    ./dotnet-install.sh --jsonfile ./global.json --verbose
+    # ./dotnet-install.sh --jsonfile ./global.json --verbose
+    ./dotnet-install.sh --version 7.0.305 --verbose
     printenv
   env:
     DOTNET_INSTALL_DIR : /usr/share/dotnet
