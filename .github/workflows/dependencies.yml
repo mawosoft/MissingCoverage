@@ -12,6 +12,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       with:
+        show-progress: false
         fetch-depth: 1
     - name: Dotnet Version
       run: dotnet --version
