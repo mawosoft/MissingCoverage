@@ -27,25 +27,18 @@ steps:
 - checkout: self
   fetchDepth: 1
 - bash: |
-    # curl -o ./dotnet-install.sh -s https://dot.net/v1/dotnet-install.sh
-    # echo 'after curl'
-    wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-    echo 'after wget'
-    ls -l ./dotnet-install.sh
+    wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install.sh -nv
     chmod +x ./dotnet-install.sh
-    echo 'after chmod'
     ls -l ./dotnet-install.sh
-    # ./dotnet-install.sh --jsonfile ./global.json --verbose
-    "./dotnet-install.sh" --help
-    echo 'after script'
-    # printenv
+    ./dotnet-install.sh --jsonfile ./global.json --verbose
+    printenv
   env:
     DOTNET_INSTALL_DIR : /usr/share/dotnet
   displayName: Setup dotnet (pinned)
-# - pwsh: |
-#     dotnet --info
-#     get-item env: | fl
-#   condition: succeededOrFailed()
+- pwsh: |
+    dotnet --info
+    get-item env: | fl
+  condition: succeededOrFailed()
 # - pwsh: |
 #     . ./build/startNativeExecution.ps1
 #     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
