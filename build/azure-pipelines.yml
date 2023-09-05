@@ -30,9 +30,10 @@ steps:
     echo 'after curl'
     chmod +x ./dotnet-install.sh
     echo 'after chmod'
-    ./dotnet-install.sh --jsonfile ./global.json --verbose
+    # ./dotnet-install.sh --jsonfile ./global.json --verbose
+    ./dotnet-install.sh --help
     echo 'after script'
-    printenv
+    # printenv
   env:
     DOTNET_INSTALL_DIR : /usr/share/dotnet
   displayName: Setup dotnet (pinned)
