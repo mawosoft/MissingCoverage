@@ -28,6 +28,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     useGlobalJson: true
+    installationPath: /usr/share/dotnet
 - pwsh: |
     . ./build/startNativeExecution.ps1
     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
