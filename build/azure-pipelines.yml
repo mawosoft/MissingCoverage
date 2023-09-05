@@ -34,7 +34,7 @@ steps:
     echo 'after chmod'
     ls -l ./dotnet-install.sh
     # ./dotnet-install.sh --jsonfile ./global.json --verbose
-    ./dotnet-install.sh --help
+    "./dotnet-install.sh" --help
     echo 'after script'
     # printenv
   env:
