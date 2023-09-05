@@ -73,8 +73,10 @@ jobs:
       with:
         show-progress: false
         fetch-depth: 0
-    - name: DotNet Info
-      run: dotnet --info
+    - name: Setup dotnet (pinned)
+      uses: actions/setup-dotnet@v3
+      with:
+        global-json-file: ./global.json
     - name: Build
       env:
         MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
