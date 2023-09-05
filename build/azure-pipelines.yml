@@ -28,10 +28,12 @@ steps:
 - bash: |
     curl -o ./dotnet-install.sh -s https://dot.net/v1/dotnet-install.sh
     echo 'after curl'
+    ls ./dotnet-install.sh
     chmod +x ./dotnet-install.sh
     echo 'after chmod'
+    ls ./dotnet-install.sh
     # ./dotnet-install.sh --jsonfile ./global.json --verbose
-    ./dotnet-install.sh --help
+    dotnet-install.sh --help
     echo 'after script'
     # printenv
   env:
