@@ -26,10 +26,6 @@ variables:
 steps:
 - checkout: self
 - pwsh: |
-    $env:DOTNET_INSTALL_DIR = Join-Path $env:ProgramFiles 'dotnet'
-    Invoke-Expression "& { $(Invoke-RestMethod https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1) } -JsonFile ./global.json"
-  displayName: Setup dotnet (pinned)
-- pwsh: |
     . ./build/startNativeExecution.ps1
     Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
   displayName: Build
@@ -40,7 +36,5 @@ steps:
     MSBUILDTARGETOUTPUTLOGGING: true
     MSBUILDLOGIMPORTS: 1
     MSBUILDLOGALLENVIRONMENTVARIABLES: true
-- pwsh: |
-    $PSNativeCommandArgumentPassing = 'Legacy'
-    ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults
+- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
   displayName: Test
