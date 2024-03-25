@@ -15,7 +15,7 @@ pr:
   branches: { include: [master] }
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
 variables:
   disable.coverage.autogenerate: true
@@ -25,12 +25,9 @@ variables:
 
 steps:
 - checkout: self
-- bash: |
-    wget https://dot.net/v1/dotnet-install.sh -O ./dotnet-install.sh -nv
-    chmod +x ./dotnet-install.sh
-    ./dotnet-install.sh --jsonfile ./global.json
-  env:
-    DOTNET_INSTALL_DIR : /usr/share/dotnet
+- pwsh: |
+    $env:DOTNET_INSTALL_DIR = Join-Path $env:ProgramFiles 'dotnet'
+    Invoke-Expression "& { $(Invoke-RestMethod https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1) } -JsonFile ./global.json"
   displayName: Setup dotnet (pinned)
 - pwsh: |
     . ./build/startNativeExecution.ps1
@@ -43,34 +40,5 @@ steps:
     MSBUILDTARGETOUTPUTLOGGING: true
     MSBUILDLOGIMPORTS: 1
     MSBUILDLOGALLENVIRONMENTVARIABLES: true
-- publish: ./MSBuild_Logs
-  condition: succeededOrFailed()
-  artifact: azp-Binlogs
-  displayName: Upload Binlogs
 - pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net6.0 -v detailed -r ./TestResults
   displayName: Test
-- task: reportgenerator@5
-  condition: succeededOrFailed()
-  inputs:
-    reports: ./TestResults/Debug/net6.0/*.xml
-    targetdir: ./TestResults/report
-    reporttypes: Cobertura;HtmlInline_AzurePipelines
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFormat: VSTest
-    testResultsFiles: '*.trx'
-    searchFolder: ./TestResults/Debug/net6.0
-    publishRunAttachments: false
-- task: PublishCodeCoverageResults@1
-  condition: succeededOrFailed()
-  inputs:
-    codeCoverageTool: Cobertura
-    summaryFileLocation: ./TestResults/report/Cobertura.xml
-    reportDirectory: ./TestResults/report
-- bash: |
-    curl -o "./codecov" -s https://uploader.codecov.io/latest/linux/codecov
-    chmod +x "./codecov"
-    "./codecov" -f ./TestResults/report/Cobertura.xml -t $(CODECOV_TOKEN)
-  condition: succeededOrFailed()
-  displayName: Upload to codecov.io
