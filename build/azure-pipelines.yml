@@ -40,5 +40,7 @@ steps:
     MSBUILDTARGETOUTPUTLOGGING: true
     MSBUILDLOGIMPORTS: 1
     MSBUILDLOGALLENVIRONMENTVARIABLES: true
-- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults
+- pwsh: |
+    $PSNativeCommandArgumentPassing = 'Legacy'
+    ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults
   displayName: Test
