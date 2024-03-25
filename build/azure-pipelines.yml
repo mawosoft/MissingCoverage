@@ -47,7 +47,7 @@ steps:
   condition: succeededOrFailed()
   artifact: azp-Binlogs
   displayName: Upload Binlogs
-- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
+- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net6.0 -v detailed -r ./TestResults
   displayName: Test
 - task: reportgenerator@5
   condition: succeededOrFailed()
