@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Xml.XPath;
-using System.Linq;
 
 namespace XmlBenchmarks
 {
@@ -58,7 +58,7 @@ namespace XmlBenchmarks
             // Note that branch="False/True" in coverlet and "false/true" in FCC merged.
             // The set of available XPath functions is limited, there is no lower-case(), for example.
             int branchTrue = 0, branchFalse = 0;
-            foreach(XPathNavigator node in navi.Select(classLinesPath + "/@branch"))
+            foreach (XPathNavigator node in navi.Select(classLinesPath + "/@branch"))
             {
                 switch (node.Value.ToLowerInvariant())
                 {
@@ -139,7 +139,7 @@ namespace XmlBenchmarks
                         }
                     }
                 }
-                
+
             }
             if (tablePaddingOptions != TablePaddingOptions.None)
             {
@@ -167,7 +167,7 @@ namespace XmlBenchmarks
             string[][] table = ToTable(fileInfos, tablePaddingOptions, cultureInfo, numberFormat);
             if (table.Length == 0)
                 return null;
-            List<string> rows = table.Select(row => "| "+ string.Join(" | ", row) + " |").ToList();
+            List<string> rows = table.Select(row => "| " + string.Join(" | ", row) + " |").ToList();
             string[] separatorRow = table[0].Select(
                 cell => string.Concat(string.Empty.PadRight(cell.Length + 1, '-') + ":")).ToArray();
             separatorRow[0] = separatorRow[0].Substring(0, separatorRow[0].Length - 1) + " ";

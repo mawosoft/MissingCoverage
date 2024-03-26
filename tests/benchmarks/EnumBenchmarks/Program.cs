@@ -27,7 +27,7 @@ namespace EnumBenchmarks
         [Benchmark(Baseline = true)]
         [Arguments(2)]
         [Arguments((int)VerbosityLevel.Diagnostic + 1)]
-        public bool IsDefinedGeneric(int value) => Enum.IsDefined((VerbosityLevel) value);
+        public bool IsDefinedGeneric(int value) => Enum.IsDefined((VerbosityLevel)value);
 
         [Benchmark]
         [Arguments(2)]

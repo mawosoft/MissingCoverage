@@ -17,7 +17,7 @@ internal sealed class Options
     public OptionValue<int> MaxLineNumber { get; set; } = new(50_000);
     public OptionValue<bool> NoLogo { get; set; }
     public OptionValue<VerbosityLevel> Verbosity { get; set; } = new(VerbosityLevel.Normal);
-    public List<string> GlobPatterns { get; } = new();
+    public List<string> GlobPatterns { get; } = [];
 
     public void ParseCommandLineArguments(string[] args)
     {
@@ -31,7 +31,7 @@ internal sealed class Options
             return;
         }
 
-        char[] valueSeparators = { ':', '=' };
+        char[] valueSeparators = [':', '='];
         bool canHaveOptions = true;
 
         for (int i = 0; i < args.Length; i++)

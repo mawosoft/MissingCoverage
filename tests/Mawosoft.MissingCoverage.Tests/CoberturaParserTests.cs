@@ -25,7 +25,7 @@ public partial class CoberturaParserTests
         int pos = exception.LinePosition - fileLine.Length + (fileLine = fileLine.TrimStart()).Length;
         string[] elementLines = report.FirstInvalidElement!
             .ToString()
-            .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.TrimEntries);
+            .Split(["\r\n", "\n", "\r"], StringSplitOptions.TrimEntries);
         string elementLine;
         int expectedPos;
         if (fileLine.StartsWith("</", StringComparison.Ordinal))
@@ -90,10 +90,10 @@ public partial class CoberturaParserTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public void Ctor_InvalidReportFilePath_Throws(string reportFilePath)
+    public void Ctor_InvalidReportFilePath_Throws(string? reportFilePath)
     {
         ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
-            () => _ = new CoverageResult(reportFilePath));
+            () => _ = new CoverageResult(reportFilePath!));
         Assert.Equal("reportFilePath", ex.ParamName);
     }
 
@@ -201,14 +201,14 @@ public partial class CoberturaParserTests
     [InlineData("coverage", "profilerVersion", "1.2.3", "driverVersion", "1.2.3")]
     public void Parse_NonCoberturaRoot_Throws(params string[] rootParams)
     {
-        List<(string, string)> attributes = new();
+        List<(string, string)> attributes = [];
         for (int i = 1; i + 1 < rootParams.Length; i += 2)
         {
             attributes.Add((rootParams[i], rootParams[i + 1]));
         }
         using TempFile tempFile = new();
         CoberturaReportBuilder report = new CoberturaReportBuilder(tempFile.FullPath)
-            .AddRoot(rootParams[0], attributes.ToArray())
+            .AddRoot(rootParams[0], [.. attributes])
             .AddMinimalDefaults()
             .Save();
         report.FirstInvalidElement = report.Root; // Builder doesn't validate custom root.
@@ -451,7 +451,7 @@ public partial class CoberturaParserTests
     [Fact]
     public void Parse_ValidLineNumber_Succeeds()
     {
-        int[] numbers = new[] { 1, 27, SourceFileInfo.MaxLineNumber, 2, 6 };
+        int[] numbers = [1, 27, SourceFileInfo.MaxLineNumber, 2, 6];
         using TempFile tempFile = new();
         CoberturaReportBuilder report = new CoberturaReportBuilder(tempFile.FullPath)
             .AddSources()
@@ -527,7 +527,7 @@ public partial class CoberturaParserTests
     [Fact]
     public void Parse_ValidHits_Succeeds()
     {
-        int[] hits = new[] { 0, 1, 2, 32, 457 };
+        int[] hits = [0, 1, 2, 32, 457];
         using TempFile tempFile = new();
         CoberturaReportBuilder report = new CoberturaReportBuilder(tempFile.FullPath)
             .AddSources()

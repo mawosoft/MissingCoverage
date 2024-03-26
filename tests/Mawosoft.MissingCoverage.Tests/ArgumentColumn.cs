@@ -15,7 +15,7 @@ internal class ArgumentColumn
 
     public ArgumentColumn(IEnumerable<ArgumentCell> cells) => _cells = new(cells);
 
-    public ArgumentColumn(ArgumentCell cell) => (_cells = new()).Add(cell);
+    public ArgumentColumn(ArgumentCell cell) => (_cells = []).Add(cell);
 
     public void ResizeRows(int count)
     {
@@ -60,7 +60,7 @@ internal class ArgumentColumn
     public static ArgumentColumn Create(PropertyInfo propertyInfo, ArgumentMutations mutations)
     {
         ArgumentInfo argInfo = ArgumentInfo.Infos(propertyInfo.Name);
-        string[] oneEmptyString = new[] { "" };
+        string[] oneEmptyString = [""];
 
         IEnumerable<string> aliases = argInfo.Aliases.Count != 0
             ? (mutations.HasFlag(ArgumentMutations.Alias)
@@ -69,13 +69,13 @@ internal class ArgumentColumn
 
         IEnumerable<string> hyphens = argInfo.Aliases.Count != 0
             ? (mutations.HasFlag(ArgumentMutations.Hyphen)
-                ? new[] { "-", "--" } : new[] { "-" })
+                ? ["-", "--"] : ["-"])
             : oneEmptyString;
 
         int casingCount = mutations.HasFlag(ArgumentMutations.Casing) ? 3 : 1;
 
         // Use full permutations for hyphen, alias, and casing
-        List<string> prefixedAliases = new();
+        List<string> prefixedAliases = [];
         foreach (string alias in aliases)
         {
             if (alias.Length == 0)
@@ -107,10 +107,10 @@ internal class ArgumentColumn
 
         IEnumerable<string> delimiters = argInfo.Aliases.Count != 0 && !argInfo.IsSwitch
             ? (mutations.HasFlag(ArgumentMutations.Delimiter)
-                ? new[] { " ", ":", "=", ": ", "= " } : new[] { " " })
+                ? [" ", ":", "=", ": ", "= "] : [" "])
             : oneEmptyString;
 
-        List<(string, object?)> valuesAndTexts = new();
+        List<(string, object?)> valuesAndTexts = [];
         if (mutations.HasFlag(ArgumentMutations.InvalidValues) && !argInfo.IsSwitch)
         {
             valuesAndTexts.AddRange(argInfo.InvalidValues);
@@ -131,7 +131,7 @@ internal class ArgumentColumn
         int maxMutations =
             new[] { prefixedAliases.Count, delimiters.Count(), valuesAndTexts.Count }.Max();
 
-        List<ArgumentCell> cells = new();
+        List<ArgumentCell> cells = [];
         using RingEnumerator<string> aliasEnumerator = new(prefixedAliases);
         using RingEnumerator<string> delimiterEnumerator = new(delimiters);
         using RingEnumerator<(string, object?)> valueAndTextEnumerator = new(valuesAndTexts);

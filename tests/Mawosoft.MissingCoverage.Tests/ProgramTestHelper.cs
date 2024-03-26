@@ -118,7 +118,7 @@ internal static class ProgramTestHelper
     {
         int fileId = 1;
         string? content = null;
-        List<string> files = new();
+        List<string> files = [];
         while (files.Count < reportFileCount)
         {
             for (int level1 = 1; level1 <= 2 && files.Count < reportFileCount; level1++)

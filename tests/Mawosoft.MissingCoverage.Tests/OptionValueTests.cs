@@ -145,41 +145,41 @@ public class OptionValueTests
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void Ctor_DefaultValue(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 
     [Theory]
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void Value_Roundtrip(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 
     [Theory]
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void ToString_AddsIsSetMarker(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 
     [Theory]
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void ImplicitOperator_T(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 
     [Theory]
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void ImplicitOperator_OptionValueT(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 
     [Theory]
     [ClassData(typeof(TypeAndValue_TheoryData))]
     public void AssignStruct_CopiesStruct(Type type, object value)
     {
-        InvokeTypedTest(type, new object[] { value });
+        InvokeTypedTest(type, [value]);
     }
 }

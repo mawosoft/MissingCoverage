@@ -28,10 +28,10 @@ public class CoverageResultTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public void Ctor_InvalidReportFilePath_Throws(string reportFilePath)
+    public void Ctor_InvalidReportFilePath_Throws(string? reportFilePath)
     {
         ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
-            () => _ = new CoverageResult(reportFilePath));
+            () => _ = new CoverageResult(reportFilePath!));
         Assert.Equal("reportFilePath", ex.ParamName);
     }
 

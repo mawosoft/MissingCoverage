@@ -38,7 +38,7 @@ internal sealed class RedirectWrapper : IDisposable
 
     public RedirectWrapper(Program program)
     {
-        _lines = new();
+        _lines = [];
         _out = new(_lines, "1>");
         _error = new(_lines, "2>");
         program.Out = _out;
@@ -54,20 +54,13 @@ internal sealed class RedirectWrapper : IDisposable
 
     public void Dispose() => Close();
 
-    private class SyncLineWriter : TextWriter
+    private class SyncLineWriter(List<string> target, string prefix) : TextWriter
     {
-        private readonly List<string> _target;
-        private readonly string _prefix;
-        private volatile bool _isopen;
+        private readonly List<string> _target = target;
+        private readonly string _prefix = prefix;
+        private volatile bool _isopen = true;
 
         public bool IsOpen => _isopen;
-
-        public SyncLineWriter(List<string> target, string prefix)
-        {
-            _target = target;
-            _prefix = prefix;
-            _isopen = true;
-        }
 
         public override Encoding Encoding => Encoding.Unicode;
 

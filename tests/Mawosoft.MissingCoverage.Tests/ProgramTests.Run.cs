@@ -54,7 +54,7 @@ public partial class ProgramTests
         using TempDirectory tempDirectory = new();
         List<string> files = CreateMinimalReportFiles(tempDirectory, 1);
         using RedirectWrapper wrapper = new();
-        int exitCode = wrapper.Program.Run(new string[] { files[0] });
+        int exitCode = wrapper.Program.Run([files[0]]);
         Assert.Equal(0, exitCode);
         AssertAppTitle(wrapper);
         AssertInputTitle(wrapper);
@@ -84,7 +84,7 @@ public partial class ProgramTests_NoParallelTests
             using StringWriter error = new();
             Console.SetOut(output);
             Console.SetError(error);
-            int exitCode = Program.Main(new string[] { reportName });
+            int exitCode = Program.Main([reportName]);
             Assert.Equal(0, exitCode);
             Assert.Equal(0, error.GetStringBuilder().Length);
             string approvedFile = Path.Combine(TestDataDirectory.GetTestDataDirectory(), "approved", reportName + ".txt");

@@ -16,7 +16,7 @@ internal sealed class CoberturaParser : IDisposable
         Async = false, // Explicit for clarity
     };
 
-    private class XmlLineInfo : IXmlLineInfo
+    private sealed class XmlLineInfo : IXmlLineInfo
     {
         public int LineNumber { get; private set; }
         public int LinePosition { get; private set; }
@@ -60,7 +60,7 @@ internal sealed class CoberturaParser : IDisposable
         ReportFilePath = reportFilePath;
         ReportTimestamp = File.GetLastWriteTimeUtc(ReportFilePath);
         _xmlReader = XmlReader.Create(ReportFilePath, xmlReaderSettings);
-        _sourceDirectories = new();
+        _sourceDirectories = [];
     }
 
     [SuppressMessage("Maintainability", "CA1508:Avoid dead conditional code", Justification = "TODO false positive?")]

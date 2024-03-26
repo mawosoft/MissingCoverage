@@ -17,14 +17,14 @@ public sealed class TempFile : IDisposable
     {
         FullPath = GetRandomTempFilePath(memberName, lineNumber);
         AutoDelete = true;
-        File.WriteAllBytes(FullPath, Array.Empty<byte>());
+        File.WriteAllBytes(FullPath, []);
     }
 
     public TempFile(string path, bool autoDelete)
     {
         FullPath = Path.GetFullPath(path);
         AutoDelete = autoDelete;
-        File.WriteAllBytes(FullPath, Array.Empty<byte>());
+        File.WriteAllBytes(FullPath, []);
     }
 
     ~TempFile()

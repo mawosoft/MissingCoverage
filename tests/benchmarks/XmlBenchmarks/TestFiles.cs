@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml;
 using System.Xml.XPath;
 
@@ -40,7 +38,7 @@ namespace XmlBenchmarks
         public static List<string> GetFilePaths()
         {
             if (TestFileSelector is FileSelector.Large or FileSelector.All or FileSelector.AllKnown
-                && MockFileSizeMB > 0  && s_knownFilePaths[(int)FileSelector.Large] == null)
+                && MockFileSizeMB > 0 && s_knownFilePaths[(int)FileSelector.Large] == null)
             {
                 CreateMockFile();
             }
@@ -73,7 +71,7 @@ namespace XmlBenchmarks
             // will reuse the argument. However, XPathDocument and other stream consumers will dispose the stream
             // after reading. We return a byte[] array instead. The MemoryStream constructor only contains a few
             // variable assignments.
-            foreach(string filePath in GetFilePaths())
+            foreach (string filePath in GetFilePaths())
             {
                 yield return new FileBytesWrapper(File.ReadAllBytes(filePath), filePath);
             }
@@ -154,7 +152,7 @@ namespace XmlBenchmarks
                         break;
                     case (int)FileSelector.Large:
                         if (MockFileSizeMB > 0
-                            && Math.Round(new FileInfo(filePath).Length / (1024d*1024d)) == MockFileSizeMB)
+                            && Math.Round(new FileInfo(filePath).Length / (1024d * 1024d)) == MockFileSizeMB)
                         {
                             s_knownFilePaths[i] = filePath;
                         }

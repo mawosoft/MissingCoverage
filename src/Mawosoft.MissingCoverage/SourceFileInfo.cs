@@ -2,7 +2,7 @@
 
 namespace Mawosoft.MissingCoverage;
 
-internal sealed class SourceFileInfo
+internal sealed class SourceFileInfo(string sourceFilePath, DateTime reportTimestamp)
 {
     private static int s_defaultLineCount = 500;
     private static int s_maxLineNumber = 50_000;
@@ -23,8 +23,10 @@ internal sealed class SourceFileInfo
             : throw new ArgumentOutOfRangeException(nameof(MaxLineNumber));
     }
 
-    private string _sourceFilePath;
-    private LineInfo[] _lines;
+    private string _sourceFilePath = !string.IsNullOrWhiteSpace(sourceFilePath)
+                        ? sourceFilePath
+                        : throw new ArgumentException(null, nameof(sourceFilePath));
+    private LineInfo[] _lines = new LineInfo[DefaultLineCount];
 
     public string SourceFilePath
     {
@@ -34,19 +36,9 @@ internal sealed class SourceFileInfo
             : throw new ArgumentException(null, nameof(SourceFilePath));
     }
 
-    public DateTime ReportTimestamp { get; internal set; }
+    public DateTime ReportTimestamp { get; internal set; } = reportTimestamp;
     public int LastLineNumber { get; private set; }
     public ref readonly LineInfo Line(int index) => ref _lines[index];
-
-    public SourceFileInfo(string sourceFilePath, DateTime reportTimestamp)
-    {
-        _sourceFilePath = !string.IsNullOrWhiteSpace(sourceFilePath)
-                        ? sourceFilePath
-                        : throw new ArgumentException(null, nameof(sourceFilePath));
-        ReportTimestamp = reportTimestamp;
-        LastLineNumber = 0;
-        _lines = new LineInfo[DefaultLineCount];
-    }
 
     public override string ToString()
         => $"{SourceFilePath} ({LastLineNumber}) [{ReportTimestamp}]";
@@ -86,10 +78,7 @@ internal sealed class SourceFileInfo
 
     public void Merge(SourceFileInfo other)
     {
-        if (other == null)
-        {
-            throw new ArgumentNullException(nameof(other));
-        }
+        ArgumentNullException.ThrowIfNull(other);
         Debug.Assert(SourceFilePath == other.SourceFilePath, "SourceFilePath should be identical");
         if (other.LastLineNumber >= _lines.Length)
         {

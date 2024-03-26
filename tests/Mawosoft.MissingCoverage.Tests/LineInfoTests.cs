@@ -65,7 +65,7 @@ public class LineInfoTests
     {
         public Merge_TheoryData()
         {
-            LineInfoMergeData mergeData = new();
+            LineInfoMergeData mergeData = [];
             foreach ((LineInfo target, LineInfo other, LineInfo expected) in mergeData)
             {
                 Add(target, other, expected);

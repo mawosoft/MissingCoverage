@@ -25,7 +25,7 @@ internal class ArgumentInfo
         Aliases = new(SplitArguments(aliases));
         InvalidValues = new(
             new List<string>(SplitArguments(invalidValues)).ConvertAll(s => (s, (object?)null)));
-        ValidValues = new();
+        ValidValues = [];
         string[] valid = SplitArguments(validValues);
         Options options = new();
         // See notes on switch in OptionsTests.Clone_Succeeds
@@ -78,8 +78,8 @@ internal class ArgumentInfo
     static ArgumentInfo()
     {
         AssertOptionsMembers();
-        s_argumentInfos = new(new KeyValuePair<string, ArgumentInfo>[]
-        {
+        s_argumentInfos = new(
+        [
             // Intentionally not using nameof() here. If the name changes, other things might have changed as well.
             new ArgumentInfo("HitThreshold", "ht hit-threshold hitthreshold").KVP,
             new ArgumentInfo("CoverageThreshold", "ct coverage-threshold coveragethreshold", "0 70 100", "101 -1 bad").KVP,
@@ -93,7 +93,7 @@ internal class ArgumentInfo
             new ArgumentInfo("GlobPatterns", "").KVP,
             // Putting help last (it stops parsing) in case a user simply uses all descriptors
             new ArgumentInfo("ShowHelpOnly", "h help ?").KVP,
-        });
+        ]);
 
     }
 

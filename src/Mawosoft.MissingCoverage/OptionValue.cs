@@ -3,9 +3,9 @@
 namespace Mawosoft.MissingCoverage;
 
 [SuppressMessage("Performance", "CA1815:Override equals and operator equals on value types", Justification = "Not needed.")]
-internal struct OptionValue<T>
+internal struct OptionValue<T>(T defaultValue)
 {
-    private T _value;
+    private T _value = defaultValue;
 
     public T Value
     {
@@ -17,13 +17,7 @@ internal struct OptionValue<T>
         }
     }
 
-    public bool IsSet { get; private set; }
-
-    public OptionValue(T defaultValue)
-    {
-        _value = defaultValue;
-        IsSet = false;
-    }
+    public bool IsSet { get; private set; } = false;
 
     public override readonly string ToString() => _value?.ToString() + (IsSet ? "!" : "");
 
