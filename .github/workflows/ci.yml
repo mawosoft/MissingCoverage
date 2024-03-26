@@ -86,12 +86,12 @@ jobs:
         MSBUILDLOGIMPORTS: 1
         MSBUILDLOGALLENVIRONMENTVARIABLES: true
       run: |
-        . ./build/startNativeExecution.ps1
-        Set-Alias exec Start-NativeExecution
-        exec { dotnet restore }
-        exec { dotnet build -c Debug --no-restore }
-        exec { dotnet build -c Release --no-restore }
-        exec { dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages }
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        dotnet restore
+        dotnet build -c Debug --no-restore
+        dotnet build -c Release --no-restore
+        dotnet pack ./src/Mawosoft.MissingCoverage/Mawosoft.MissingCoverage.csproj -c Release --no-build -o ./Packages
     - name: Upload Binlogs
       if: ${{ always() }}
       uses: actions/upload-artifact@v4
@@ -130,7 +130,7 @@ jobs:
     - name: Test
       id: test
       if: ${{ github.event.inputs.skip-tests != 'true' }}
-      run: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net6.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
+      run: ./build/invokeDotnetTest.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net6.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
     - name: Upload Test results
       if: ${{ always() && steps.test.outcome != 'skipped' }}
       uses: actions/upload-artifact@v4
@@ -140,10 +140,10 @@ jobs:
     - name: Test Tool Install/Uninstall
       if: ${{ github.event.inputs.skip-tests != 'true' }}
       run: |
-        . ./build/startNativeExecution.ps1
-        Set-Alias exec Start-NativeExecution
-        exec { dotnet tool install Mawosoft.MissingCoverage -g --version "*-*" --add-source ./Packages }
-        exec { dotnet tool uninstall Mawosoft.MissingCoverage -g }
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        dotnet tool install Mawosoft.MissingCoverage -g --version "*-*" --add-source ./Packages
+        dotnet tool uninstall Mawosoft.MissingCoverage -g
 
   Deploy:
     needs: Build
