@@ -10,7 +10,7 @@ internal class CoberturaReportBuilder
     public static readonly XDocumentType DefaultDTD = new("coverage", null, "http://cobertura.sourceforge.net/xml/coverage-04.dtd", null!);
 
     private DateTime _reportTimestamp;
-    private readonly List<string> _normalizedSourceDirectories = new();
+    private readonly List<string> _normalizedSourceDirectories = [];
     private XElement? _root;
     private XElement? _sources;
     private XElement? _packages;

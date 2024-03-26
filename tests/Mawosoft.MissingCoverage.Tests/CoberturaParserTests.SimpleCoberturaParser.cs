@@ -15,7 +15,7 @@ public partial class CoberturaParserTests
         Regex regexCoverage = new(@"\((\d+)/(\d+)\)", RegexOptions.CultureInvariant);
 
         CoverageResult result = new(reportFilePath);
-        List<string> sourceDirectories = new();
+        List<string> sourceDirectories = [];
 
         XPathNavigator navi = document.CreateNavigator();
         XPathNavigator? node = navi.SelectSingleNode("/coverage");

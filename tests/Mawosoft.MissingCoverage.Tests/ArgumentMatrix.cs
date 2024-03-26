@@ -6,7 +6,7 @@ namespace Mawosoft.MissingCoverage.Tests;
 
 internal class ArgumentMatrix
 {
-    private readonly List<ArgumentColumn> _columns = new();
+    private readonly List<ArgumentColumn> _columns = [];
 
     public int ColumnCount => _columns.Count;
     public int RowCount => _columns.FirstOrDefault()?.Cells.Count ?? 0;
@@ -75,7 +75,7 @@ internal class ArgumentMatrix
     {
         ArgumentMatrix matrix = new();
         string[] propertyNames = SplitArguments(propertyNamesSpaceSeparated);
-        if (propertyNames.Length == 0) propertyNames = new[] { "*" };
+        if (propertyNames.Length == 0) propertyNames = ["*"];
         List<string> unusedPropertyNames = new(GetOptionsPropertyNames(PropertySelector.All));
         foreach (string propertyName in propertyNames)
         {
@@ -96,7 +96,7 @@ internal class ArgumentMatrix
                     matrix.AddColumn(new ArgumentColumn(new ArgumentCell("--", null)));
                     break;
                 default:
-                    AddColumns(new[] { propertyName });
+                    AddColumns([propertyName]);
                     break;
             }
         }

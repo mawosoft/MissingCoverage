@@ -5,7 +5,7 @@ namespace Mawosoft.MissingCoverage;
 internal sealed class CoverageResult
 {
     public bool LatestOnly { get; }
-    public List<string> ReportFilePaths { get; } = new();
+    public List<string> ReportFilePaths { get; } = [];
     public Dictionary<string, SourceFileInfo> SourceFiles { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public CoverageResult() { }
@@ -23,10 +23,7 @@ internal sealed class CoverageResult
 
     public void AddOrMergeSourceFile(SourceFileInfo sourceFile)
     {
-        if (sourceFile == null)
-        {
-            throw new ArgumentNullException(nameof(sourceFile));
-        }
+        ArgumentNullException.ThrowIfNull(sourceFile);
         if (SourceFiles.TryGetValue(sourceFile.SourceFilePath, out SourceFileInfo? existing))
         {
             if (LatestOnly)

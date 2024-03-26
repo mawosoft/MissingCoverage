@@ -43,7 +43,7 @@ public class OptionsTests
         Options actual = new();
         actual.ParseCommandLineArguments(null!);
         AssertOptionsEqual(expected, actual);
-        actual.ParseCommandLineArguments(Array.Empty<string>());
+        actual.ParseCommandLineArguments([]);
         AssertOptionsEqual(expected, actual);
     }
 
@@ -93,7 +93,7 @@ public class OptionsTests
     internal void ParseCmdLine_Verbosity(string actualValue, VerbosityLevel expectedValue)
     {
         Options expected = new() { Verbosity = expectedValue };
-        string[] args = { "-v", actualValue };
+        string[] args = ["-v", actualValue];
         Options actual = new();
         actual.ParseCommandLineArguments(args);
         AssertOptionsEqual(expected, actual);
@@ -363,8 +363,8 @@ public class OptionsTests
                 break;
             case List<string>:
                 Assert.Equal(nameof(Options.GlobPatterns), property.Name);
-                source.GlobPatterns.AddRange(new[] { "glob1", "glob2" });
-                expected.GlobPatterns.AddRange(new[] { "glob1", "glob2" });
+                source.GlobPatterns.AddRange(["glob1", "glob2"]);
+                expected.GlobPatterns.AddRange(["glob1", "glob2"]);
                 break;
             default:
                 // Unexpected type; this gives the full type name

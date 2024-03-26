@@ -81,15 +81,15 @@ internal sealed class Program
 
     }
 
-    internal IEnumerable<string> GetInputFiles()
+    internal List<string> GetInputFiles()
     {
         if (_exitCode != 0)
         {
-            return Array.Empty<string>();
+            return [];
         }
 
-        List<string> inputFilePaths = new();
-        HashSet<string> uniqueInputs = new();
+        List<string> inputFilePaths = [];
+        HashSet<string> uniqueInputs = [];
         Matcher? matcher = null;
         string lastRoot = string.Empty;
         foreach (string arg in Options.GlobPatterns)

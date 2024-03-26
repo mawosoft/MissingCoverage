@@ -13,7 +13,7 @@ internal class ArgumentRow
 
     public ArgumentRow(IEnumerable<ArgumentCell> cells) => _cells = cells.ToList();
 
-    public ArgumentRow(ArgumentCell cell) => (_cells = new()).Add(cell);
+    public ArgumentRow(ArgumentCell cell) => (_cells = []).Add(cell);
 
     public override string ToString() => string.Join(' ', ToArguments());
 

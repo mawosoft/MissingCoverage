@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
 
 using System;
-using System.Runtime.CompilerServices;
 
 namespace LineInfoBenchmarks
 {

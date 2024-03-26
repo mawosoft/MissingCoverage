@@ -18,10 +18,10 @@ public class SourceFileInfoTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public void Ctor_InvalidSourceFilePath_Throws(string sourceFilePath)
+    public void Ctor_InvalidSourceFilePath_Throws(string? sourceFilePath)
     {
         ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
-            () => _ = new SourceFileInfo(sourceFilePath, DateTime.UtcNow));
+            () => _ = new SourceFileInfo(sourceFilePath!, DateTime.UtcNow));
         Assert.Equal(nameof(SourceFileInfo.SourceFilePath), ex.ParamName, ignoreCase: true);
     }
 
@@ -43,12 +43,12 @@ public class SourceFileInfoTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("  ")]
-    public void SourceFilePath_InvalidValue_Throws(string sourceFilePath)
+    public void SourceFilePath_InvalidValue_Throws(string? sourceFilePath)
     {
         string initialPath = "foo";
         SourceFileInfo info = new(initialPath, DateTime.UtcNow);
         ArgumentException ex = Assert.ThrowsAny<ArgumentException>(
-            () => info.SourceFilePath = sourceFilePath);
+            () => info.SourceFilePath = sourceFilePath!);
         Assert.Equal(nameof(SourceFileInfo.SourceFilePath), ex.ParamName);
         Assert.Equal(initialPath, info.SourceFilePath);
     }
@@ -236,7 +236,7 @@ public class SourceFileInfoTests
             SourceFileInfo targetFile2 = new(otherFile1.SourceFilePath, otherFile1.ReportTimestamp);
             SourceFileInfo otherFile2 = new(targetFile1.SourceFilePath, targetFile1.ReportTimestamp);
             SourceFileInfo expectedFile2 = new(targetFile2.SourceFilePath, targetFile2.ReportTimestamp);
-            LineInfoMergeData mergeData = new();
+            LineInfoMergeData mergeData = [];
             int lineNumber = 0;
             foreach ((LineInfo target, LineInfo other, LineInfo expected) in mergeData)
             {
@@ -282,7 +282,7 @@ public class SourceFileInfoTests
     internal void LineSequences_Succeeds()
     {
         SourceFileInfo source = new("somefile", DateTime.UtcNow);
-        List<(int, int)> expected = new();
+        List<(int, int)> expected = [];
         Assert.Equal(expected, source.LineSequences());
         // Force LastLineNumber = 5, but clear line afterwards
         source.AddOrMergeLine(5, new() { Hits = 0 });
