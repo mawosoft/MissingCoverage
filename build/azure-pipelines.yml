@@ -33,8 +33,9 @@ steps:
     DOTNET_INSTALL_DIR : /usr/share/dotnet
   displayName: Setup dotnet (pinned)
 - pwsh: |
-    . ./build/startNativeExecution.ps1
-    Start-NativeExecution { dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0 }
+    $ErrorActionPreference = 'Stop'
+    $PSNativeCommandUseErrorActionPreference = $true
+    dotnet build ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug /p:TargetFrameworks=net6.0
   displayName: Build
   env:
     MSBuildDebugEngine: 1 # Auto-creates binlogs in ./MSBuild_Logs
@@ -47,7 +48,7 @@ steps:
   condition: succeededOrFailed()
   artifact: azp-Binlogs
   displayName: Upload Binlogs
-- pwsh: ./build/test.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
+- pwsh: ./build/invokeDotnetTest.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug -f net6.0 -v detailed -r ./TestResults -s ./tests/Mawosoft.MissingCoverage.Tests/coverlet.runsettings
   displayName: Test
 - task: reportgenerator@5
   condition: succeededOrFailed()
@@ -63,6 +64,7 @@ steps:
     searchFolder: ./TestResults/Debug/net6.0
     publishRunAttachments: false
 - task: PublishCodeCoverageResults@1
+  # Cannot use v2 with ReportGenerator
   condition: succeededOrFailed()
   inputs:
     codeCoverageTool: Cobertura
