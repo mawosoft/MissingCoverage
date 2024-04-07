@@ -27,6 +27,12 @@ jobs:
       with:
         show-progress: false
         fetch-depth: 1
+    - name: Install
+      working-directory: ${{ runner.temp }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        dotnet tool update -g dotnet-file
     - name: Update
       # Both must be set because dotnet-file internally calls gh cli to fetch the changelog.
       env:
@@ -34,7 +40,8 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       id: update
       run: |
-        dotnet tool update -g dotnet-file
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
 
         [string]$tmpfile = New-TemporaryFile
         dotnet-file update "-c:$tmpfile"
@@ -61,4 +68,4 @@ jobs:
         commit-message: |
           Update Single File Dependencies
 
-          ${{ steps.sync.outputs.Changelog }}
+          ${{ steps.update.outputs.Changelog }}
