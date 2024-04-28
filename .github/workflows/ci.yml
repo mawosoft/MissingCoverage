@@ -76,6 +76,7 @@ jobs:
     - name: Setup dotnet (pinned)
       uses: actions/setup-dotnet@v4
       with:
+        dotnet-version: '6.0.421'
         global-json-file: ./global.json
     - name: Build
       env:
