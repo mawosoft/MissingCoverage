@@ -55,8 +55,4 @@
     <Version>0.9.3-dev</Version>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" />
-  </ItemGroup>
-
 </Project>
