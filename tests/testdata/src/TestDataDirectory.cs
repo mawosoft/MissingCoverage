@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 Matthias Wolf, Mawosoft.
+// Copyright (c) 2021-2024 Matthias Wolf, Mawosoft.
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 using System.Runtime.CompilerServices;
