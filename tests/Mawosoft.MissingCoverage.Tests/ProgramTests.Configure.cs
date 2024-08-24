@@ -15,7 +15,7 @@ public partial class ProgramTests
         Assert.True(wrapper.Program.Options.ShowHelpOnly);
         AssertAppTitle(wrapper);
         Assert.NotEmpty(wrapper.Lines);
-        Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>", StringComparison.Ordinal)));
+        Assert.DoesNotContain(wrapper.Lines, s => !s.StartsWith("2>", StringComparison.Ordinal));
     }
 
     [Fact]

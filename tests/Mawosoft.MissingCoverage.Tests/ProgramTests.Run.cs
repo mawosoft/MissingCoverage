@@ -18,7 +18,7 @@ public partial class ProgramTests
         AssertOut(wrapper, "Usage: MissingCoverage [options] [filespecs]");
         AssertOut(wrapper, string.Empty);
         AssertOut(wrapper, "Options:");
-        Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>", StringComparison.Ordinal)));
+        Assert.DoesNotContain(wrapper.Lines, s => s.StartsWith("2>", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public partial class ProgramTests
         AssertOut(wrapper, "Usage: MissingCoverage [options] [filespecs]");
         AssertOut(wrapper, string.Empty);
         AssertOut(wrapper, "Options:");
-        Assert.Empty(wrapper.Lines.Where(s => s.StartsWith("2>", StringComparison.Ordinal)));
+        Assert.DoesNotContain(wrapper.Lines, s => s.StartsWith("2>", StringComparison.Ordinal));
     }
 
     [Fact]

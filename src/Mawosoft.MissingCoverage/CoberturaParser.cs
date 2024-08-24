@@ -2,11 +2,8 @@
 
 namespace Mawosoft.MissingCoverage;
 
-internal sealed class CoberturaParser : IDisposable
+internal sealed partial class CoberturaParser : IDisposable
 {
-    private static readonly Regex s_regexDeterministic = new(
-        @"^/_\d?/", RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
     private static readonly XmlReaderSettings s_xmlReaderSettings = new()
     {
         DtdProcessing = DtdProcessing.Ignore,
@@ -235,7 +232,7 @@ internal sealed class CoberturaParser : IDisposable
     {
         if (path.StartsWith("https:", StringComparison.OrdinalIgnoreCase)
             || path.StartsWith("http:", StringComparison.OrdinalIgnoreCase)
-            || (path.StartsWith("/_", StringComparison.Ordinal) && s_regexDeterministic.IsMatch(path)))
+            || (path.StartsWith("/_", StringComparison.Ordinal) && RegexDeterministic().IsMatch(path)))
         {
             return path;
         }
@@ -274,10 +271,7 @@ internal sealed class CoberturaParser : IDisposable
 
     private void CheckDisposed()
     {
-        if (_xmlReader.ReadState == ReadState.Closed)
-        {
-            throw new ObjectDisposedException(nameof(CoberturaParser));
-        }
+        ObjectDisposedException.ThrowIf(_xmlReader.ReadState == ReadState.Closed, this);
     }
 
     [DoesNotReturn]
@@ -309,4 +303,7 @@ internal sealed class CoberturaParser : IDisposable
         }
         throw new XmlException(message, innerException, lineNumber, linePosition);
     }
+
+    [GeneratedRegex(@"^/_\d?/")]
+    private static partial Regex RegexDeterministic();
 }
