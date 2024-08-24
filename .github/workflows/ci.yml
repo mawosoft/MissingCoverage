@@ -131,7 +131,7 @@ jobs:
     - name: Test
       id: test
       if: ${{ github.event.inputs.skip-tests != 'true' }}
-      run: ./build/invokeDotnetTest.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net6.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
+      run: ./build/invokeDotnetTest.ps1 -p ./tests/Mawosoft.MissingCoverage.Tests/Mawosoft.MissingCoverage.Tests.csproj -c Debug, Release -f net8.0 -v detailed -r ./TestResults -ff:$${{ strategy.fail-fast }}
     - name: Upload Test results
       if: ${{ always() && steps.test.outcome != 'skipped' }}
       uses: actions/upload-artifact@v4
