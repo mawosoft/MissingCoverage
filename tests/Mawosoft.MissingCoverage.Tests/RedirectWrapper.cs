@@ -73,10 +73,7 @@ internal sealed class RedirectWrapper : IDisposable
                 (value ?? string.Empty).Split(Environment.NewLine).Select(s => _prefix + s);
             lock ((_target as ICollection).SyncRoot)
             {
-                if (!_isopen)
-                {
-                    throw new ObjectDisposedException(nameof(SyncLineWriter));
-                }
+                ObjectDisposedException.ThrowIf(!_isopen, this);
                 _target.AddRange(lines);
             }
         }

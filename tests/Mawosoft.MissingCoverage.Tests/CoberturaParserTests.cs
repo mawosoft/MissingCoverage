@@ -153,7 +153,7 @@ public partial class CoberturaParserTests
         _ = parser.Parse();
         Assert.Equal(ReadState.Closed, parser.ReadState);
         ObjectDisposedException ex = Assert.Throws<ObjectDisposedException>(() => _ = parser.Parse());
-        Assert.Equal(nameof(CoberturaParser), ex.ObjectName);
+        Assert.EndsWith(nameof(CoberturaParser), ex.ObjectName, StringComparison.Ordinal);
     }
 
     [Fact]

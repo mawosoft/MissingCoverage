@@ -71,7 +71,7 @@ public partial class ProgramTests
             if (verbosity == VerbosityLevel.Diagnostic)
             {
                 Assert.NotEmpty(wrapper.Lines);
-                Assert.Empty(wrapper.Lines.Where(s => !s.StartsWith("2>", StringComparison.Ordinal)));
+                Assert.DoesNotContain(wrapper.Lines, s => !s.StartsWith("2>", StringComparison.Ordinal));
             }
             else
             {
